@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Claude Composer Fixture</title>
+  <style>
+    body { font-family: system-ui; padding: 40px; }
+    .composer-wrap { position: relative; max-width: 700px; margin: 0 auto; }
+    .ProseMirror {
+      width: 100%;
+      min-height: 120px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="composer-wrap" data-testid="composer">
+    <div class="ProseMirror" contenteditable="true" role="textbox"></div>
+  </div>
+  <script type="module" src="/src/content/fixture-bootstrap.tsx"></script>
+</body>
+</html>

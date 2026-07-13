@@ -1,0 +1,10 @@
+node_modules/
+dist/
+promptpilot.zip
+.DS_Store
+*.log
+.chrome-dev-profile/
+test-results/
+.env
+.env.*
+*.local

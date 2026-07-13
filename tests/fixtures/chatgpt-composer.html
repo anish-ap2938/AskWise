@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ChatGPT Composer Fixture</title>
+  <style>
+    body { font-family: system-ui; padding: 40px; }
+    .composer-wrap { position: relative; max-width: 700px; margin: 0 auto; }
+    #prompt-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 16px;
+      resize: vertical;
+    }
+  </style>
+</head>
+<body>
+  <div class="composer-wrap">
+    <textarea id="prompt-textarea" placeholder="Message ChatGPT..."></textarea>
+  </div>
+  <script type="module" src="/src/content/fixture-bootstrap.tsx"></script>
+</body>
+</html>
