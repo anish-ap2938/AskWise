@@ -2,6 +2,7 @@ import type { ModeId, RewriteContext, VariantSet } from "../types";
 import { getStyleRules } from "../styleRules";
 import { cleanRequest, extractSignals } from "../extract";
 import type { SubRecipeDef } from "./types";
+import { EXPERT_RIGOR_FOOTER } from "../promptQuality";
 import { careerPack } from "./packs/career";
 import { codingPack } from "./packs/coding";
 import { learningPack } from "./packs/learning";
@@ -9,12 +10,22 @@ import { writingPack } from "./packs/writing";
 import { builderPack } from "./packs/builder";
 import { researchPack } from "./packs/research";
 import { dataPack } from "./packs/data";
+import { healthPack } from "./packs/health";
+import { legalPack } from "./packs/legal";
+import { financePack } from "./packs/finance";
+import { sciencePack } from "./packs/science";
 
 export type { SubRecipeDef } from "./types";
 
+/** Order matters: first matching trigger under the classified parent wins.
+ * Domain packs beat generic learning triggers (e.g. "step by step" + krebs). */
 export const allSubRecipes: SubRecipeDef[] = [
   ...careerPack,
   ...codingPack,
+  ...healthPack,
+  ...legalPack,
+  ...financePack,
+  ...sciencePack,
   ...learningPack,
   ...writingPack,
   ...builderPack,
@@ -55,11 +66,6 @@ function deriveSimple(structured: string, raw: string): string {
   );
 }
 
-const RIGOR_FOOTER = `**Rigor:**
-- State every assumption explicitly; if a key detail is missing, ask up to 2 sharp questions before answering.
-- Flag anything where experts disagree or where the answer depends on my situation.
-- End with the single most important next step.`;
-
 export function renderSubRecipe(
   def: SubRecipeDef,
   raw: string,
@@ -69,7 +75,7 @@ export function renderSubRecipe(
   const simple = def.simple ? interpolate(def.simple, raw) : deriveSimple(def.structured, raw);
   const advanced = def.advanced
     ? interpolate(def.advanced, raw)
-    : `${structured}\n\n${RIGOR_FOOTER}\n\n${getStyleRules(ctx.targetModel)}`;
+    : `${structured}\n\n${EXPERT_RIGOR_FOOTER}\n\n${getStyleRules(ctx.targetModel)}`;
 
   return { simple, structured, advanced };
 }

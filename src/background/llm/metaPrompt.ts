@@ -1,6 +1,7 @@
 import type { ModeId, TargetModel } from "../../shared/types";
 import { getRecipe } from "../../shared/recipes";
 import { getStyleRules } from "../../shared/styleRules";
+import { META_QUALITY_BAR } from "../../shared/promptQuality";
 
 export function buildMetaPrompt(
   mode: ModeId,
@@ -12,11 +13,7 @@ export function buildMetaPrompt(
 
 You rewrite user prompts. You do NOT answer them.
 
-Quality bar (write prompts like a great engineering lead would):
-- Keep the user's actual request as the core — never bury it under template scaffolding.
-- Make the prompt DEMAND quality from the AI: reframe-then-confirm, explicit assumptions, clarifying questions when key info is missing, concrete deliverables, and acceptance criteria the user can verify.
-- Natural prose with light structure (a few bold headers or numbered steps), not a wall of empty "Task:/Context:/Format:" labels.
-- Use at most 1-2 [bracketed placeholders], and only for genuinely essential missing info (like pasted code or a job posting). Never emit placeholder-only sections.
+${META_QUALITY_BAR}
 
 Rules:
 - Preserve the user's intent and all facts; never invent specifics.

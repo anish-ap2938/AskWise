@@ -47,5 +47,5 @@ ${getStyleRules(ctx.targetModel)}`;
     return { simple, structured, advanced };
   },
   llmSystemPrompt: (target) =>
-    `You rewrite user prompts. You do NOT answer them. Mode: Deep Research. ${getStyleRules(target)} Emphasize citations, recency, fact-vs-inference labeling, and ranked actionable conclusions.`,
+    `You rewrite user prompts. You do NOT answer them. Mode: Deep Research. ${getStyleRules(target)} Emphasize citations, recency, fact-vs-inference labeling, steelman of the opposite view, acceptance criteria for "research is done", and ranked actionable conclusions. Never invent sources.`,
 };

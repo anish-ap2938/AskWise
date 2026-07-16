@@ -3,8 +3,8 @@ import { allSubRecipes, findSubRecipe, renderSubRecipe } from "../../src/shared/
 import { improveTier1 } from "../../src/shared/improve";
 
 describe("sub-recipe registry", () => {
-  it("has at least 30 sub-recipes", () => {
-    expect(allSubRecipes.length).toBeGreaterThanOrEqual(30);
+  it("has at least 40 sub-recipes", () => {
+    expect(allSubRecipes.length).toBeGreaterThanOrEqual(40);
   });
 
   it("has unique ids in parent/slug form", () => {
@@ -51,6 +51,12 @@ describe("sub-recipe routing", () => {
     { text: "build me a website for my bakery", mode: "app_builder", id: "app_builder/business_site" },
     { text: "best laptops under $1000 for programming", mode: "research", id: "research/buying" },
     { text: "excel formula to sum values between dates", mode: "data_analysis", id: "data_analysis/spreadsheet" },
+    { text: "explain how the immune system fights infection", mode: "quick_improve", id: "quick_improve/clinical_explain" },
+    { text: "tips to sleep better at night", mode: "quick_improve", id: "quick_improve/wellness_plan" },
+    { text: "is it legal to record a phone call in california", mode: "quick_improve", id: "quick_improve/legal_explain" },
+    { text: "how do i start investing with very little money as a complete beginner please", mode: "quick_improve", id: "quick_improve/personal_finance" },
+    { text: "explain the krebs cycle step by step", mode: "quick_improve", id: "quick_improve/science_explain" },
+    { text: "literature review on intermittent fasting outcomes", mode: "research", id: "research/scientific_lit" },
   ];
 
   for (const c of cases) {

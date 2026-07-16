@@ -9,7 +9,7 @@ Sub-recipes are pure data. Each one is a specialized template under a top-level 
 selected by keyword triggers.
 
 **1. Pick (or create) a pack file** in `src/shared/subrecipes/packs/` — e.g. `career.ts`,
-`writing.ts`, or a new `health.ts`.
+`writing.ts`, `health.ts`, `legal.ts`, `finance.ts`, `science.ts`.
 
 **2. Add an entry:**
 
