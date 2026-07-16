@@ -41,7 +41,7 @@ export function AttachBar({ attachments, onAdd, onRemove, onError }: AttachBarPr
             key={a.id}
             className="inline-flex max-w-full items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800"
             title={
-              `${a.words} words woven in on Replace/Copy` +
+              `${a.words} words woven into the prompt` +
               (a.truncated ? " (excerpt)" : "") +
               (a.redactedCount > 0 ? ` — ${a.redactedCount} secret(s) redacted` : "")
             }
@@ -75,7 +75,7 @@ export function AttachBar({ attachments, onAdd, onRemove, onError }: AttachBarPr
       </div>
       {attachments.length > 0 && (
         <p className="mt-1 text-[10px] aw-muted">
-          File content stays on your device and is added when you Replace or Copy.
+          File content stays on your device and is woven into the prompt above.
         </p>
       )}
       <input

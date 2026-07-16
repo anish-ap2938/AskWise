@@ -8,6 +8,7 @@ import {
   callLocalLlm,
   LocalLlmError,
 } from "./local";
+import { callOnDeviceLlm, OnDeviceLlmError } from "./ondevice";
 import { buildMetaPrompt } from "./metaPrompt";
 
 export interface ProviderRequest {
@@ -50,6 +51,19 @@ export async function runProviderLadder(
   for (const provider of providers.ladder) {
     try {
       let llmResult: { structured: string; advanced: string } | null = null;
+
+      if (provider === "ondevice" && providers.ondevice?.enabled) {
+        try {
+          llmResult = await callOnDeviceLlm(providers, system, user, req.onChunk);
+        } catch (err) {
+          warnings.push(
+            err instanceof OnDeviceLlmError
+              ? `ondevice: ${err.message}`
+              : "ondevice failed"
+          );
+          continue;
+        }
+      }
 
       if (provider === "local" && providers.local.enabled) {
         try {

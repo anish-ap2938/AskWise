@@ -1,18 +1,20 @@
 {
   "name": "askwise",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "rm -rf dist && tsc && vite build --mode production && node scripts/sanitize-manifest.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "eval": "tsx scripts/eval.ts",
+    "capture:assets": "CAPTURE=1 playwright test tests/e2e/capture-assets.spec.ts && node scripts/make-demo-gif.mjs",
     "zip": "npm run build && node scripts/zip.mjs"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.84",
     "nanoid": "^5.1.5",
     "pdfjs-dist": "^6.1.200",
     "react": "^18.3.1",

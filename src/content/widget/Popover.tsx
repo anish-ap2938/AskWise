@@ -1,11 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ImproveResult } from "../../shared/improve";
 import type { ModeId, TargetModel, VariantSet } from "../../shared/types";
 import type { Attachment } from "../../shared/attachment";
 import { ModeChip, VariantTabs } from "./VariantTabs";
 import { ScoreRow } from "./ScoreRow";
 import { SecretsChip } from "./SecretsChip";
+import { withAttachments } from "../../shared/attachment";
 import { AttachBar } from "./AttachBar";
+import { computePopoverPosition } from "./utils";
 
 type VariantKey = "simple" | "structured" | "advanced";
 
@@ -36,6 +38,7 @@ interface PopoverProps {
   onRequestTier2: () => void;
   onToggleSecrets: () => void;
   onToggleScore: () => void;
+  onRefinePrompt: (prompt: string) => void;
 }
 
 export function Popover({
@@ -64,8 +67,89 @@ export function Popover({
   onRequestTier2,
   onToggleSecrets,
   onToggleScore,
+  onRefinePrompt,
 }: PopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [positionStyle, setPositionStyle] = useState<React.CSSProperties>({
+    position: "fixed",
+    top: 0,
+    left: 0,
+    visibility: "hidden",
+    zIndex: 2147483647,
+  });
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPositionStyle({
+        position: "fixed",
+        top: 0,
+        left: 0,
+        visibility: "hidden",
+        zIndex: 2147483647,
+      });
+      return;
+    }
+
+    const reposition = () => {
+      const pop = ref.current;
+      if (!pop) return;
+
+      const root = pop.getRootNode();
+      const pillEl =
+        root instanceof ShadowRoot
+          ? root.querySelector(".aw-pill")
+          : document.querySelector(".aw-pill");
+      const pillRect = pillEl?.getBoundingClientRect();
+      if (!pillRect) return;
+
+      const naturalHeight = Math.max(pop.scrollHeight, 280);
+      const naturalWidth = Math.max(pop.offsetWidth, 280);
+
+      const { top, left, maxHeight } = computePopoverPosition(
+        pillRect,
+        naturalWidth,
+        naturalHeight
+      );
+
+      setPositionStyle({
+        position: "fixed",
+        top,
+        left,
+        right: "auto",
+        bottom: "auto",
+        margin: 0,
+        width: "min(380px, calc(100vw - 16px))",
+        maxHeight: `${maxHeight}px`,
+        height: "auto",
+        overflowY: "auto",
+        visibility: "visible",
+        zIndex: 2147483647,
+        pointerEvents: "auto",
+      });
+    };
+
+    reposition();
+    const raf = requestAnimationFrame(() => {
+      reposition();
+      requestAnimationFrame(reposition);
+    });
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", reposition, true);
+    };
+  }, [
+    open,
+    result,
+    activeVariant,
+    scoreExpanded,
+    secretsExpanded,
+    streamingText,
+    tier2Note,
+    attachments.length,
+  ]);
 
   useEffect(() => {
     if (!open) return;
@@ -103,12 +187,17 @@ export function Popover({
   if (!open || !result) return null;
 
   const variants: VariantSet = { ...result.variants, ...variantOverrides };
+  const baseActive =
+    activeVariant === "advanced" && streamingText
+      ? streamingText
+      : variants[activeVariant];
+  const displayText = withAttachments(baseActive, attachments);
 
   return (
     <div
       ref={ref}
       className="aw-popover"
-      style={{ bottom: "100%", right: 0, marginBottom: 8 }}
+      style={positionStyle}
       onPointerDown={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
@@ -141,6 +230,8 @@ export function Popover({
       <VariantTabs
         active={activeVariant}
         variants={variants}
+        attachments={attachments}
+        displayText={displayText}
         original={originalText}
         tier2Note={tier2Note}
         streamingText={streamingText}
@@ -149,6 +240,7 @@ export function Popover({
           if (v === "advanced") onRequestTier2();
         }}
         onEdit={onVariantEdit}
+        onRefinePrompt={onRefinePrompt}
       />
 
       <AttachBar

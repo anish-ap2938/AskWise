@@ -37,8 +37,24 @@ export async function updateStorage(
 }
 
 function migrate(data: StorageSchema): StorageSchema {
-  if (!data.schemaVersion) {
-    return { ...DEFAULT_STORAGE, ...data, schemaVersion: 1 };
-  }
-  return data;
+  const base = !data.schemaVersion
+    ? { ...DEFAULT_STORAGE, ...data, schemaVersion: 1 }
+    : data;
+
+  const providers = base.providers ?? DEFAULT_STORAGE.providers;
+  const ondevice = providers.ondevice ?? DEFAULT_STORAGE.providers.ondevice;
+  const ladder = providers.ladder?.includes("ondevice")
+    ? providers.ladder
+    : (["ondevice", ...(providers.ladder ?? [])] as StorageSchema["providers"]["ladder"]);
+
+  return {
+    ...DEFAULT_STORAGE,
+    ...base,
+    providers: {
+      ...DEFAULT_STORAGE.providers,
+      ...providers,
+      ondevice,
+      ladder,
+    },
+  };
 }

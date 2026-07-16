@@ -1,10 +1,12 @@
 import type { StorageSchema } from "../../shared/types";
 import { restoreRedactions } from "../../shared/redact";
+import {
+  parseJsonContent,
+  tryParsePartial,
+  type LlmRewriteResult,
+} from "./parseLlmJson";
 
-export interface LlmRewriteResult {
-  structured: string;
-  advanced: string;
-}
+export type { LlmRewriteResult };
 
 export async function callLocalLlm(
   providers: StorageSchema["providers"],
@@ -101,30 +103,6 @@ async function parseStream(
   }
 
   return parseJsonContent(accumulated);
-}
-
-function tryParsePartial(text: string): LlmRewriteResult | null {
-  try {
-    return parseJsonContent(text);
-  } catch {
-    const structuredMatch = text.match(/"structured"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-    if (structuredMatch) {
-      return {
-        structured: structuredMatch[1]!.replace(/\\n/g, "\n").replace(/\\"/g, '"'),
-        advanced: "",
-      };
-    }
-    return null;
-  }
-}
-
-function parseJsonContent(content: string): LlmRewriteResult {
-  const cleaned = content.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
-  const parsed = JSON.parse(cleaned) as LlmRewriteResult;
-  if (!parsed.structured || !parsed.advanced) {
-    throw new Error("Invalid JSON response from LLM");
-  }
-  return parsed;
 }
 
 export async function detectOllama(

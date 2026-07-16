@@ -1,8 +1,16 @@
 import { execSync } from "node:child_process";
+import { readFileSync, existsSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
+const pkg = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8"));
+const version = pkg.version ?? "0.0.0";
 const dist = join(process.cwd(), "dist");
-const out = join(process.cwd(), "promptpilot.zip");
+const outName = `askwise-${version}.zip`;
+const out = join(process.cwd(), outName);
+const legacy = join(process.cwd(), "promptpilot.zip");
+
+if (existsSync(out)) unlinkSync(out);
+if (existsSync(legacy)) unlinkSync(legacy);
 
 try {
   if (process.platform === "win32") {
@@ -11,7 +19,7 @@ try {
       { stdio: "inherit" }
     );
   } else {
-    execSync(`cd dist && zip -r ../promptpilot.zip .`, { stdio: "inherit" });
+    execSync(`cd dist && zip -r ../${outName} .`, { stdio: "inherit" });
   }
   console.log(`Created ${out}`);
 } catch (e) {

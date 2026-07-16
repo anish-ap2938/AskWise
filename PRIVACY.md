@@ -12,11 +12,16 @@
 
 ## When network requests happen
 
-1. **Local AI rewrites (default):** requests go to `localhost` (Ollama / LM Studio) —
-   your machine, not the internet.
-2. **Cloud rewrites (opt-in only):** if you paste your own Anthropic or OpenAI API key in
+1. **On-device model download (default):** on install, AskWise may download a small
+   instruct model (~1 GB) from Hugging Face / MLC CDNs into the browser’s Cache Storage.
+   Inference then runs locally via WebGPU — prompts are not sent to those CDNs.
+2. **Optional local server:** if you enable Ollama / LM Studio, Advanced requests go to
+   `localhost` — your machine, not the internet.
+3. **Cloud rewrites (opt-in only):** if you paste your own Anthropic or OpenAI API key in
    settings, "Advanced" rewrites call that provider directly with your key. Secrets
    (API keys, emails, card numbers, tokens) are **redacted locally before** the request.
+
+Full store-facing copy also lives in [`public/privacy-policy.html`](public/privacy-policy.html).
 
 ## What we collect
 
@@ -31,9 +36,11 @@ machine. Uninstalling the extension deletes them.
 ## Permissions explained
 
 - `storage` — save your settings locally.
+- `offscreen` — run the on-device WebGPU model in a hidden document.
 - Host permissions for chatgpt.com, claude.ai, gemini.google.com, perplexity.ai,
   chat.deepseek.com, copilot.microsoft.com — inject the widget on those sites.
-- `localhost` — talk to your local Ollama/LM Studio.
+- Hugging Face / GitHub raw CDNs — download on-device model weights (once).
+- `localhost` — talk to your local Ollama/LM Studio (optional).
 - api.anthropic.com / api.openai.com — only used if you add your own key.
 
 Verify all of this yourself — the code is open source under the MIT license.

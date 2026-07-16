@@ -4,6 +4,7 @@ import { DEFAULT_STORAGE } from "../shared/types";
 import { detectOllama } from "../background/llm/local";
 import { getOllamaCorsMessage } from "../background/llm/providerRouter";
 import { KeyForm } from "./KeyForm";
+import { OnDeviceSection } from "./OnDeviceSection";
 import { PrivacyExplainer } from "./PrivacyExplainer";
 
 export function Options() {
@@ -16,9 +17,28 @@ export function Options() {
     chrome.storage.local.get(["askwise", "promptpilot"], (result) => {
       const data = (result.askwise ?? result.promptpilot) as StorageSchema | undefined;
       if (!data) return;
-      setStorage(data);
+      const merged: StorageSchema = {
+        ...DEFAULT_STORAGE,
+        ...data,
+        providers: {
+          ...DEFAULT_STORAGE.providers,
+          ...data.providers,
+          ondevice: {
+            ...DEFAULT_STORAGE.providers.ondevice,
+            ...data.providers?.ondevice,
+          },
+          local: {
+            ...DEFAULT_STORAGE.providers.local,
+            ...data.providers?.local,
+          },
+          ladder: data.providers?.ladder?.includes("ondevice")
+            ? data.providers.ladder
+            : DEFAULT_STORAGE.providers.ladder,
+        },
+      };
+      setStorage(merged);
       if (!result.askwise && result.promptpilot) {
-        chrome.storage.local.set({ askwise: result.promptpilot });
+        chrome.storage.local.set({ askwise: merged });
         chrome.storage.local.remove("promptpilot");
       }
     });
@@ -145,8 +165,14 @@ export function Options() {
         </label>
       </section>
 
+      <OnDeviceSection storage={storage} onPersist={persist} />
+
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold">Local model (recommended)</h2>
+        <h2 className="text-lg font-semibold">Optional: Ollama / LM Studio</h2>
+        <p className="text-sm text-gray-600">
+          For larger models (Qwen3 4B/8B) if you already run a local server. Falls through
+          after the built-in on-device model.
+        </p>
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -161,7 +187,7 @@ export function Options() {
               })
             }
           />
-          <span>Enable local model (Ollama / LM Studio)</span>
+          <span>Enable Ollama / LM Studio</span>
         </label>
         <label className="block">
           <span className="text-sm text-gray-600">Base URL</span>

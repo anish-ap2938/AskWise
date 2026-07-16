@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { improveTier1 } from "../shared/improve";
 import { getRecipe } from "../shared/recipes";
+import type { OnDeviceProgress } from "../shared/ondeviceModel";
 
 const DEMO_PROMPT = "i want to build and app for fitness";
 
@@ -13,6 +14,34 @@ const EXAMPLES = [
 
 export function Onboarding() {
   const [text, setText] = useState(DEMO_PROMPT);
+  const [ondevice, setOndevice] = useState<OnDeviceProgress | null>(null);
+
+  useEffect(() => {
+    const refresh = () => {
+      chrome.runtime.sendMessage({ kind: "GET_ONDEVICE_STATUS" }, (response) => {
+        if (response?.kind === "ONDEVICE_STATUS") {
+          setOndevice(response.payload as OnDeviceProgress);
+        }
+      });
+    };
+    refresh();
+    // Kick download if install listener hasn't finished yet.
+    chrome.runtime.sendMessage({ kind: "ENSURE_ONDEVICE" });
+    const id = window.setInterval(refresh, 1200);
+    const onStorage = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      area: string
+    ) => {
+      if (area === "local" && changes.askwise_ondevice_progress) {
+        setOndevice(changes.askwise_ondevice_progress.newValue as OnDeviceProgress);
+      }
+    };
+    chrome.storage.onChanged.addListener(onStorage);
+    return () => {
+      window.clearInterval(id);
+      chrome.storage.onChanged.removeListener(onStorage);
+    };
+  }, []);
 
   const result = useMemo(() => {
     const trimmed = text.trim();
@@ -106,22 +135,29 @@ export function Onboarding() {
         ))}
       </section>
 
-      <section className="rounded-xl border border-gray-200 p-5">
-        <h2 className="mb-1 text-base font-semibold">Optional: smarter rewrites with a local AI</h2>
-        <p className="mb-3 text-sm text-gray-600">
-          The instant rewrites you just saw work offline, forever, for free. For even better
-          "Advanced" rewrites, install{" "}
-          <a className="text-violet-600 underline" href="https://ollama.com" target="_blank" rel="noreferrer">
-            Ollama
-          </a>{" "}
-          and pull a model — your prompts still never leave your machine.
+      <section className="rounded-xl border border-violet-200 bg-violet-50/40 p-5 space-y-3">
+        <h2 className="text-base font-semibold">Downloading on-device AI…</h2>
+        <p className="text-sm text-gray-600">
+          A ~1 GB private model is downloading into your browser for Advanced rewrites.
+          Instant Simple/Structured rewrites already work — no wait needed.
+        </p>
+        <div className="h-2 overflow-hidden rounded-full bg-white">
+          <div
+            className="h-full bg-violet-600 transition-all"
+            style={{ width: `${Math.round((ondevice?.progress ?? 0) * 100)}%` }}
+          />
+        </div>
+        <p className="text-xs text-gray-600">
+          {ondevice?.status === "ready"
+            ? "Model ready — Advanced rewrites will run on your PC."
+            : ondevice?.text || "Starting download…"}
         </p>
         <button
           type="button"
           className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white"
           onClick={() => chrome.runtime.openOptionsPage()}
         >
-          Open settings
+          Model settings
         </button>
       </section>
 

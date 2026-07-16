@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  DEFAULT_ONDEVICE_MODEL,
+  type OnDeviceModelId,
+} from "./ondeviceModel";
 
 export type ModeId =
   | "quick_improve"
@@ -111,6 +115,10 @@ export interface StorageSchema {
     shortcutEnabled: boolean;
   };
   providers: {
+    ondevice: {
+      enabled: boolean;
+      model: OnDeviceModelId;
+    };
     local: {
       enabled: boolean;
       baseUrl: string;
@@ -119,7 +127,7 @@ export interface StorageSchema {
     };
     anthropicKey?: string;
     openaiKey?: string;
-    ladder: ("local" | "anthropic" | "openai")[];
+    ladder: ("ondevice" | "local" | "anthropic" | "openai")[];
   };
   templates: SavedTemplate[];
 }
@@ -142,13 +150,17 @@ export const DEFAULT_STORAGE: StorageSchema = {
     shortcutEnabled: true,
   },
   providers: {
+    ondevice: {
+      enabled: true,
+      model: DEFAULT_ONDEVICE_MODEL,
+    },
     local: {
       enabled: true,
       baseUrl: "http://localhost:11434",
       model: "qwen3:8b",
       lastDetected: null,
     },
-    ladder: ["local", "anthropic", "openai"],
+    ladder: ["ondevice", "local", "anthropic", "openai"],
   },
   templates: [],
 };
@@ -256,6 +268,41 @@ export const llmErrorSchema = z.object({
   }),
 });
 
+export const getOnDeviceStatusSchema = z.object({
+  kind: z.literal("GET_ONDEVICE_STATUS"),
+});
+
+export const ensureOnDeviceSchema = z.object({
+  kind: z.literal("ENSURE_ONDEVICE"),
+  payload: z
+    .object({
+      model: z.string().optional(),
+    })
+    .optional(),
+});
+
+export const refineRequestSchema = z.object({
+  kind: z.literal("REFINE_REQUEST"),
+  payload: z.object({
+    currentPrompt: z.string(),
+    history: z.array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string(),
+      })
+    ),
+    userMessage: z.string(),
+  }),
+});
+
+export const refineResponseSchema = z.object({
+  kind: z.literal("REFINE_RESPONSE"),
+  payload: z.object({
+    reply: z.string(),
+    prompt: z.string().nullable(),
+  }),
+});
+
 export const messageSchema = z.discriminatedUnion("kind", [
   improveRequestSchema,
   improveResponseSchema,
@@ -265,6 +312,10 @@ export const messageSchema = z.discriminatedUnion("kind", [
   classifyRequestSchema,
   classifyResponseSchema,
   llmErrorSchema,
+  getOnDeviceStatusSchema,
+  ensureOnDeviceSchema,
+  refineRequestSchema,
+  refineResponseSchema,
 ]);
 
 export type Msg = z.infer<typeof messageSchema>;

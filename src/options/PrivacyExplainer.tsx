@@ -5,7 +5,10 @@ export function PrivacyExplainer() {
       <ul className="text-sm text-gray-600 space-y-2 list-disc pl-5">
         <li>AskWise only reads text from the chat composer input — never chat history.</li>
         <li>Tier 1 rewrites run entirely offline in your browser.</li>
-        <li>Tier 2 defaults to a local model on your machine (Ollama). Nothing leaves your computer.</li>
+        <li>
+          Advanced defaults to a built-in on-device model (downloaded once into your browser;
+          inference stays on your PC). Optional Ollama / cloud BYOK if you enable them.
+        </li>
         <li>Cloud API keys are optional, stored locally, and only used when you click Advanced.</li>
         <li>Secrets are redacted locally before any LLM call.</li>
         <li>No analytics, telemetry, or data sale. No backend server.</li>

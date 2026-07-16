@@ -26,7 +26,19 @@ describe("providerRouter redaction", () => {
 
     const { callLocalLlm } = await import("../../src/background/llm/local");
     await callLocalLlm(
-      { local: { enabled: true, baseUrl: "http://localhost:11434", model: "qwen3:4b", lastDetected: null }, ladder: ["local"] },
+      {
+        ondevice: {
+          enabled: false,
+          model: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+        },
+        local: {
+          enabled: true,
+          baseUrl: "http://localhost:11434",
+          model: "qwen3:4b",
+          lastDetected: null,
+        },
+        ladder: ["local"],
+      },
       "system",
       redacted
     );

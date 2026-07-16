@@ -230,53 +230,63 @@ export function WidgetApp({ adapter, enabled }: WidgetAppProps) {
 
   if (!enabled) return null;
 
+  // Popover is a sibling of the fixed pill host so `position: fixed` is
+  // viewport-relative (a fixed ancestor would become its containing block).
   return (
-    <div style={hostStyle}>
-      <div style={{ position: "relative", pointerEvents: "auto" }}>
-        <Pill
-          score={result?.scoreBefore.total ?? 0}
-          visible={pillVisible}
-          onClick={openPopover}
-        />
-        <Popover
-          open={popoverOpen}
-          result={result}
-          originalText={text}
-          variantOverrides={variantOverrides}
-          onVariantEdit={(variant, newText) =>
-            setVariantOverrides((prev) => ({ ...prev, [variant]: newText }))
-          }
-          activeVariant={activeVariant}
-          mode={mode}
-          targetModel={targetModel}
-          tier2Note={tier2Note}
-          streamingText={streamingText}
-          copyOnly={copyOnly}
-          secretsExpanded={secretsExpanded}
-          scoreExpanded={scoreExpanded}
-          attachments={attachments}
-          onAttachAdd={(a) => setAttachments((prev) => [...prev, a])}
-          onAttachRemove={(id) =>
-            setAttachments((prev) => prev.filter((a) => a.id !== id))
-          }
-          onAttachError={(message) => setToast({ message })}
-          onClose={() => setPopoverOpen(false)}
-          onVariantChange={setActiveVariant}
-          onModeChange={(m) => refresh(text, m)}
-          onReplace={handleReplace}
-          onCopy={handleCopy}
-          onSave={handleSave}
-          onRequestTier2={handleRequestTier2}
-          onToggleSecrets={() => setSecretsExpanded((v) => !v)}
-          onToggleScore={() => setScoreExpanded((v) => !v)}
-        />
-        <Toast
-          message={toast?.message ?? ""}
-          actionLabel={toast?.actionLabel}
-          onAction={toast?.action}
-          visible={!!toast}
-        />
+    <>
+      <div style={hostStyle}>
+        <div style={{ position: "relative", pointerEvents: "auto" }}>
+          <Pill
+            score={result?.scoreBefore.total ?? 0}
+            visible={pillVisible}
+            onClick={openPopover}
+          />
+          <Toast
+            message={toast?.message ?? ""}
+            actionLabel={toast?.actionLabel}
+            onAction={toast?.action}
+            visible={!!toast}
+          />
+        </div>
       </div>
-    </div>
+      <Popover
+        open={popoverOpen}
+        result={result}
+        originalText={text}
+        variantOverrides={variantOverrides}
+        onVariantEdit={(variant, newText) =>
+          setVariantOverrides((prev) => ({ ...prev, [variant]: newText }))
+        }
+        activeVariant={activeVariant}
+        mode={mode}
+        targetModel={targetModel}
+        tier2Note={tier2Note}
+        streamingText={streamingText}
+        copyOnly={copyOnly}
+        secretsExpanded={secretsExpanded}
+        scoreExpanded={scoreExpanded}
+        attachments={attachments}
+        onAttachAdd={(a) => setAttachments((prev) => [...prev, a])}
+        onAttachRemove={(id) =>
+          setAttachments((prev) => prev.filter((a) => a.id !== id))
+        }
+        onAttachError={(message) => setToast({ message })}
+        onClose={() => setPopoverOpen(false)}
+        onVariantChange={setActiveVariant}
+        onModeChange={(m) => refresh(text, m)}
+        onReplace={handleReplace}
+        onCopy={handleCopy}
+        onSave={handleSave}
+        onRequestTier2={handleRequestTier2}
+        onToggleSecrets={() => setSecretsExpanded((v) => !v)}
+        onToggleScore={() => setScoreExpanded((v) => !v)}
+        onRefinePrompt={(prompt) => {
+          // Refined text is the full prompt (may already include file context).
+          setVariantOverrides((prev) => ({ ...prev, [activeVariant]: prompt }));
+          setAttachments([]);
+          setStreamingText("");
+        }}
+      />
+    </>
   );
 }

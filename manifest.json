@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "AskWise",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn rough AI prompts into structured, model-ready prompts — locally and privately.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "offscreen"],
   "host_permissions": [
     "https://chatgpt.com/*",
     "https://*.chatgpt.com/*",
@@ -18,7 +18,14 @@
     "http://localhost/*",
     "http://127.0.0.1/*",
     "https://api.anthropic.com/*",
-    "https://api.openai.com/*"
+    "https://api.openai.com/*",
+    "https://huggingface.co/*",
+    "https://*.huggingface.co/*",
+    "https://cdn-lfs.huggingface.co/*",
+    "https://cdn-lfs-us-1.huggingface.co/*",
+    "https://cdn-lfs-us-1.hf.co/*",
+    "https://cas-bridge.xethub.hf.co/*",
+    "https://raw.githubusercontent.com/*"
   ],
   "background": {
     "service_worker": "src/background/index.ts",
@@ -53,6 +60,9 @@
     "16": "icons/16.png",
     "48": "icons/48.png",
     "128": "icons/128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' data: blob: http://localhost:* http://127.0.0.1:* https://api.anthropic.com https://api.openai.com https://huggingface.co https://*.huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs-us-1.huggingface.co https://cdn-lfs-us-1.hf.co https://cas-bridge.xethub.hf.co https://raw.githubusercontent.com"
   },
   "web_accessible_resources": [
     {

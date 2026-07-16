@@ -3,24 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <title>AskWise Privacy Policy</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.5; color: #18181b; }
+    h1, h2 { line-height: 1.25; }
+    code { font-size: 0.9em; }
+  </style>
 </head>
 <body>
   <h1>AskWise Privacy Policy</h1>
   <p><strong>Last updated:</strong> July 2026</p>
+
   <h2>Summary</h2>
-  <p>AskWise processes your prompt text locally in your browser. We do not operate a backend server, do not sell data, and do not collect analytics or telemetry.</p>
+  <p>
+    AskWise processes your prompt text locally in your browser. We do not operate a backend
+    server, do not sell data, and do not collect analytics or telemetry.
+  </p>
+
   <h2>What we access</h2>
   <ul>
     <li>Only the text in the chat composer on supported AI chat sites when you use the extension.</li>
-    <li>Settings and API keys you enter, stored in chrome.storage.local on your device.</li>
+    <li>Settings, saved templates, and optional API keys you enter — stored in <code>chrome.storage.local</code> on your device.</li>
+    <li>Optional local file attachments you choose — parsed on-device and never uploaded to an AskWise server.</li>
   </ul>
+
   <h2>What leaves your device</h2>
   <ul>
-    <li><strong>Nothing by default.</strong> Tier 1 improvements are fully offline.</li>
-    <li>Optional Tier 2: local Ollama on localhost, or cloud APIs only if you provide your own API key.</li>
+    <li><strong>Nothing by default for Simple/Structured rewrites.</strong> Tier 1 improvements are fully offline.</li>
+    <li>
+      <strong>On-device model weights (once):</strong> on install, AskWise may download a small
+      instruct model (~1 GB) from Hugging Face / MLC CDNs into the browser’s Cache Storage.
+      Your prompts are <em>not</em> sent to those CDNs; inference runs locally via WebGPU.
+    </li>
+    <li>
+      <strong>Optional local server:</strong> if you enable Ollama / LM Studio, Advanced requests
+      go to <code>localhost</code> on your machine.
+    </li>
+    <li>
+      <strong>Optional cloud BYOK:</strong> only if you paste your own Anthropic or OpenAI API key.
+      Secrets are redacted locally before any cloud call.
+    </li>
   </ul>
+
+  <h2>Permissions</h2>
+  <ul>
+    <li><code>storage</code> — settings, templates, keys, model download progress</li>
+    <li><code>offscreen</code> — run the on-device WebGPU model in a hidden document</li>
+    <li>Host permissions for supported chat sites — inject the composer widget only</li>
+    <li>Hugging Face / GitHub raw — download model weights once</li>
+    <li><code>localhost</code> — optional Ollama / LM Studio</li>
+    <li>Anthropic / OpenAI APIs — only when you configure a key</li>
+  </ul>
+
   <h2>Data retention</h2>
-  <p>Templates and settings persist locally until you delete them or uninstall the extension. We do not retain copies on any server.</p>
+  <p>
+    Templates, settings, cached model weights, and API keys persist locally until you delete
+    them or uninstall the extension. We do not retain copies on any AskWise server.
+  </p>
+
   <h2>Contact</h2>
   <p>Questions: open an issue in the AskWise repository.</p>
 </body>
