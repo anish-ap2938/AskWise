@@ -4,7 +4,7 @@
 
 **Working name:** PromptPilot (alternatives: PromptCraft, PromptIQ)
 **One-liner:** Grammarly for AI prompts — a Chrome extension that classifies what you're typing into ChatGPT/Claude and rewrites it into a high-quality, model-aware prompt before you send it.
-**Document purpose:** This is the build spec. Hand this to Cursor (or Claude Code) and implement top-to-bottom. MVP scope is Sections 1–16. Section 17+ is v2.
+**Document purpose:** Product and engineering specification for AskWise (historically named PromptPilot). MVP scope is Sections 1–16. Section 17+ is v2.
 
 ---
 
@@ -280,7 +280,7 @@ Local is the **default and recommended** path: it costs nothing, works offline, 
 
 Do **not** default to reasoning models (deepseek-r1 family): they think before answering, which adds latency and buys nothing for a rewrite task.
 
-**Ollama integration details (Cursor: implement exactly this):**
+**Ollama integration details:**
 
 - **Detection:** on popover open, service worker does `GET http://localhost:11434/api/tags` with a 800 ms timeout. Success → local provider active, model list populated. Connection refused → Ollama not running → show setup CTA. HTTP 403 → Ollama running but blocking the extension origin → show the CORS fix (below).
 - **CORS gotcha (this WILL bite):** Ollama validates the `Origin` header, and extension requests arrive as `chrome-extension://<id>`. The user must set `OLLAMA_ORIGINS=chrome-extension://*` (env var, or `launchctl setenv` on macOS / systemd override on Linux / system env var on Windows) and restart Ollama. The onboarding screen must show the copy-pasteable one-liner per OS and a "Test connection" button. Detect the 403 specifically and surface this fix, not a generic error.
@@ -361,7 +361,7 @@ Threat model notes:
 Options page (React) — keys, defaults, per-site toggle, privacy explainer
 ```
 
-Key implementation details Cursor must follow:
+Key implementation requirements:
 
 - **Shadow DOM, closed mode** for all injected UI; Tailwind compiled into the shadow root via a constructable stylesheet (use `@webcomponents` pattern or inline `<style>`; do NOT rely on page CSS).
 - **Composer detection:** each adapter defines `findComposer(): HTMLElement | null` using 2–3 selector strategies tried in order, then a `MutationObserver` on `document.body` re-runs detection when the composer unmounts (both sites are SPAs that remount the composer on navigation).
@@ -526,7 +526,7 @@ promptpilot/
 ```
 ---
 
-## Q. Implementation plan (Cursor-ready milestones)
+## Q. Implementation plan (milestones)
 
 Work strictly in order. Each milestone ends with passing tests and a manually verifiable behavior. Do not start a milestone until the previous one's acceptance criteria pass.
 
@@ -558,7 +558,7 @@ Build in this order: (a) `local.ts` client against Ollama's OpenAI-compatible en
 Dark mode, keyboard shortcut, empty/edge states (0-char, 10k-char prompt), icons, privacy policy page, store listing draft, Data Safety form answers.
 ✅ Passes the full test plan in §S; unpacked install → Web Store zip builds reproducibly.
 
-Total: ~8–11 working days for a solo dev with AI assistance.
+Total: ~8–11 working days for a solo developer.
 
 ## R. v2 roadmap (post-launch, in order of leverage)
 
@@ -598,11 +598,9 @@ Free: Tier 1 unlimited + BYOK unlimited (BYOK users cost you nothing — keep th
 | Anthropic/OpenAI change browser-call policies | Low-medium | Provider layer abstracts this; hosted tier is the durable path |
 | Prompt bloat reputation | Medium | Anti-bloat rubric penalty + Simple Answer mode + ship the "shorter is better" demo in marketing |
 
-## V. Cursor kickoff prompt
+## V. Implementation notes
 
-Paste this into Cursor with this spec file in the repo root:
-
-> Read `promptpilot-spec.md` in full before writing any code. Build the PromptPilot Chrome extension exactly as specified, following the milestone order in §Q strictly — do not skip ahead. Start with M0 (scaffold: Vite + @crxjs/vite-plugin + React + TypeScript strict + Tailwind + Vitest + Playwright, manifest from §L). After each milestone, stop, run the tests, show me the acceptance-criteria checklist for that milestone with pass/fail, and wait for my approval before continuing. Constraints: no backend, no telemetry, no permissions beyond those in the manifest in §L, all injected UI in closed Shadow DOM, Tier 1 must work fully offline. When implementing site adapters, use the fixture-first approach in §S. Ask me only if genuinely blocked; otherwise make the decision the spec implies and note it.
+Implement milestones in §Q in order. Constraints for v1: no backend, no telemetry, permissions limited to the manifest in §L, injected UI in closed Shadow DOM, Tier 1 fully offline. Use the fixture-first approach in §S for site adapters.
 
 ## W. Example outputs for the remaining modes (Tier 1 Structured variant)
 

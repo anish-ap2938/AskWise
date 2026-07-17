@@ -48,6 +48,15 @@ Generated via `npm run capture:assets` from local fixtures (swap for live-site s
 5. `05-options.png` — options: on-device model + privacy
 6. `06-onboarding.png` — onboarding before/after demo
 
+## Privacy policy URL (Chrome Web Store)
+https://askwise-privacy.vercel.app/privacy-policy
+
+Also valid: https://askwise-privacy.vercel.app/privacy
+
+Do **not** use the bare domain root alone if reviewers treat it as an “owner site”.
+Source: `site/privacy-policy/` — redeploy with `cd site && vercel --prod`.
+Must stay public (no Vercel SSO): `vercel project protection disable askwise-privacy --sso`
+
 ## Data Safety (Chrome Web Store form)
 | Question | Answer |
 |----------|--------|
