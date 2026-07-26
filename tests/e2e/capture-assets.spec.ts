@@ -88,21 +88,14 @@ test.describe("store asset capture", () => {
           providers: {
             ondevice: {
               enabled: true,
-              model: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+              model: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
             },
-            local: {
-              enabled: true,
-              baseUrl: "http://localhost:11434",
-              model: "qwen3:8b",
-              lastDetected: Date.now(),
-            },
-            ladder: ["ondevice", "local", "anthropic", "openai"],
           },
           templates: [],
         },
         askwise_ondevice_progress: {
           status: "ready",
-          model: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+          model: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
           progress: 1,
           text: "Model ready",
           updatedAt: Date.now(),
@@ -167,7 +160,7 @@ test.describe("store asset capture", () => {
                 kind: "ONDEVICE_STATUS",
                 payload: {
                   status: "downloading",
-                  model: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+                  model: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
                   progress: 0.62,
                   text: "Fetching model weights…",
                   updatedAt: Date.now(),

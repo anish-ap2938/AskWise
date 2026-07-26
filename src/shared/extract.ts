@@ -17,21 +17,69 @@ const TYPO_FIXES: Array<[RegExp, string]> = [
   [/\bdefinately\b/gi, "definitely"],
   [/\baccomodate\b/gi, "accommodate"],
   [/\bwich\b/gi, "which"],
+  [/\bbild\b/gi, "build"],
+  [/\bwep\b/gi, "web"],
+  [/\bfitnes\b/gi, "fitness"],
+  [/\bbackery\b/gi, "bakery"],
+  [/\bbakry\b/gi, "bakery"],
+  [/\bbakeery\b/gi, "bakery"],
+  [/\bresturant\b/gi, "restaurant"],
+  [/\brestraunt\b/gi, "restaurant"],
+  [/\brestaraunt\b/gi, "restaurant"],
+  [/\bbussiness\b/gi, "business"],
+  [/\bbusines\b/gi, "business"],
+  [/\bscheduleing\b/gi, "scheduling"],
+  [/\binventoryy\b/gi, "inventory"],
+  [/\bdashbord\b/gi, "dashboard"],
+  [/\bdashbaord\b/gi, "dashboard"],
+  [/\bcalender\b/gi, "calendar"],
+  [/\bmanagment\b/gi, "management"],
+  [/\benviroment\b/gi, "environment"],
+  [/\blangauge\b/gi, "language"],
+  [/\bframwork\b/gi, "framework"],
+  [/\bdatabse\b/gi, "database"],
+  [/\bauthencation\b/gi, "authentication"],
+  [/\bprormpt\b/gi, "prompt"],
+  [/\beveyrhting\b/gi, "everything"],
+  [/\bgeenrate\b/gi, "generate"],
+  [/\bgeenerate\b/gi, "generate"],
+  [/\bspelkkling\b/gi, "spelling"],
+  [/\bspeling\b/gi, "spelling"],
+  [/\bmistkaes\b/gi, "mistakes"],
+  [/\bshoyuld\b/gi, "should"],
+  [/\busally\b/gi, "usually"],
   [/\bwhats\b/gi, "what's"],
   [/\bdont\b/gi, "don't"],
   [/\bcant\b/gi, "can't"],
   [/\bwont\b/gi, "won't"],
   [/\bim\b/gi, "I'm"],
   [/\bi\b/g, "I"],
-  [/\s{2,}/g, " "],
 ];
 
-function fixCommonTypos(text: string): string {
+function applyTypoFixes(text: string): string {
   let t = text;
   for (const [re, replacement] of TYPO_FIXES) {
-    t = t.replace(re, replacement);
+    t = t.replace(re, (match) => {
+      if (match === match.toUpperCase()) return replacement.toUpperCase();
+      if (/^[A-Z]/.test(match)) {
+        return replacement.charAt(0).toUpperCase() + replacement.slice(1);
+      }
+      return replacement;
+    });
   }
-  return t.trim();
+  return t;
+}
+
+export function fixCommonTypos(text: string): string {
+  return applyTypoFixes(text).replace(/\s{2,}/g, " ").trim();
+}
+
+/** Fix known prose typos without modifying fenced or inline code. */
+export function normalizePromptProse(text: string): string {
+  return text
+    .split(/(```[\s\S]*?```|`[^`\n]*`)/g)
+    .map((part, index) => (index % 2 === 1 ? part : applyTypoFixes(part)))
+    .join("");
 }
 
 /** Strip conversational filler so templates can reuse the user's actual request. */

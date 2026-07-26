@@ -1,3 +1,5 @@
+import { normalizePromptProse } from "../../shared/extract";
+
 export interface RefineChatMessage {
   role: "user" | "assistant";
   content: string;
@@ -27,9 +29,13 @@ When upgrading a prompt, push toward:
 
 Rules:
 - Keep the user's real intent and facts. Never invent specifics they didn't provide.
+- Correct spelling, grammar, punctuation, capitalization, and obvious speech-to-text errors throughout the prompt.
+- Preserve exact code, commands, paths, URLs, identifiers, quoted text, product names, and error messages.
 - Prefer at most 1 clarifying question when key info is missing; otherwise update the prompt.
 - When you update the prompt, return the FULL replacement prompt (not a diff).
 - Keep file/reference sections if they already exist in the draft.
+- Mention useful tool capabilities only when they are available; never invent hidden tools or slash commands.
+- Silently proofread the final prompt for duplicated, vague, or contradictory instructions.
 - Reply in plain language (1–3 short sentences).
 - Return ONLY valid JSON: {"reply":"...","prompt":null} or {"reply":"...","prompt":"full updated prompt"}`;
 
@@ -72,7 +78,7 @@ export function parseRefineContent(content: string): RefineResult {
         : "Updated.";
     const prompt =
       typeof parsed.prompt === "string" && parsed.prompt.trim()
-        ? parsed.prompt.trim()
+        ? normalizePromptProse(parsed.prompt.trim())
         : null;
     return { reply, prompt };
   } catch {
@@ -82,7 +88,9 @@ export function parseRefineContent(content: string): RefineResult {
       return {
         reply: replyMatch[1]!.replace(/\\n/g, "\n").replace(/\\"/g, '"'),
         prompt: promptMatch
-          ? promptMatch[1]!.replace(/\\n/g, "\n").replace(/\\"/g, '"')
+          ? normalizePromptProse(
+              promptMatch[1]!.replace(/\\n/g, "\n").replace(/\\"/g, '"')
+            )
           : null,
       };
     }

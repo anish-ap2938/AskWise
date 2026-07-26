@@ -36,14 +36,15 @@ For ChatGPT, Claude, Gemini, Perplexity, DeepSeek, Copilot:
 
 - [ ] Fresh install opens onboarding with download progress
 - [ ] Progress reaches “ready” (or clear unsupported message without WebGPU)
-- [ ] Advanced tab uses on-device model when ready (or falls back to Tier 1 with note)
-- [ ] Options → disable on-device → Advanced falls through to Ollama/BYOK/Tier 1
+- [ ] Advanced tab streams a spelling-corrected rewrite from the on-device model
+- [ ] Refine updates the current prompt using the same on-device model
+- [ ] Without WebGPU, Advanced shows a clear error while Simple / Structured still work
 - [ ] Reload extension; cached model reports ready without full re-download
 
 ## Store package
 
-- [ ] Version is `0.2.0` in `manifest.json` / `package.json`
-- [ ] Zip is `askwise-0.2.0.zip` (not legacy `promptpilot.zip`)
+- [ ] Version is `0.2.3` in `manifest.json` / `package.json`
+- [ ] Zip is `askwise-0.2.3.zip` (not legacy `promptpilot.zip`)
 - [ ] Listing copy matches `docs/store-listing.md`
 - [ ] Six screenshots in `store-assets/` (or live replacements)
 - [ ] Privacy policy URL points at `PRIVACY.md` / hosted `privacy-policy.html`

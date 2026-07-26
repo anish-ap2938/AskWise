@@ -14,11 +14,12 @@ import { healthPack } from "./packs/health";
 import { legalPack } from "./packs/legal";
 import { financePack } from "./packs/finance";
 import { sciencePack } from "./packs/science";
+import { agentPack } from "./packs/agent";
+import { granularPack } from "./packs/granular";
 
 export type { SubRecipeDef } from "./types";
 
-/** Order matters: first matching trigger under the classified parent wins.
- * Domain packs beat generic learning triggers (e.g. "step by step" + krebs). */
+/** Order matters only as a soft tie-break; matching is scored. */
 export const allSubRecipes: SubRecipeDef[] = [
   ...careerPack,
   ...codingPack,
@@ -31,20 +32,70 @@ export const allSubRecipes: SubRecipeDef[] = [
   ...builderPack,
   ...researchPack,
   ...dataPack,
+  ...agentPack,
+  ...granularPack,
 ];
 
-const compiled = allSubRecipes.map((def) => ({
+const compiled = allSubRecipes.map((def, index) => ({
   def,
+  index,
+  category: def.category ?? def.id.split("/")[1]?.replace(/_.*/, "") ?? "general",
   regexes: def.triggers.map((t) => new RegExp(t, "i")),
 }));
 
-/** First sub-recipe under `mode` with a matching trigger, or null. */
-export function findSubRecipe(raw: string, mode: ModeId): SubRecipeDef | null {
-  for (const { def, regexes } of compiled) {
-    if (def.parent !== mode) continue;
-    if (regexes.some((re) => re.test(raw))) return def;
+export function subRecipeCategory(def: SubRecipeDef): string {
+  return def.category ?? def.id.split("/")[1]?.replace(/_.*/, "") ?? "general";
+}
+
+function scoreDef(
+  raw: string,
+  entry: (typeof compiled)[number]
+): number {
+  let hits = 0;
+  let specificity = 0;
+  for (const re of entry.regexes) {
+    if (re.test(raw)) {
+      hits += 1;
+      specificity += re.source.length;
+    }
   }
-  return null;
+  if (hits === 0) return 0;
+  return hits * 10 + specificity * 0.05 + (entry.def.priority ?? 0) - entry.index * 0.001;
+}
+
+/** Best sub-recipe under `mode`, or null. */
+export function findSubRecipe(raw: string, mode: ModeId): SubRecipeDef | null {
+  let best: (typeof compiled)[number] | null = null;
+  let bestScore = 0;
+  for (const entry of compiled) {
+    if (entry.def.parent !== mode) continue;
+    const score = scoreDef(raw, entry);
+    if (score > bestScore) {
+      best = entry;
+      bestScore = score;
+    }
+  }
+  return bestScore > 0 ? best!.def : null;
+}
+
+/**
+ * Strong global match used when the parent mode has no sub-recipe hit.
+ * Requires a clear keyword win so we don't steal soft matches.
+ */
+export function findBestSubRecipe(
+  raw: string,
+  minScore = 12
+): SubRecipeDef | null {
+  let best: (typeof compiled)[number] | null = null;
+  let bestScore = 0;
+  for (const entry of compiled) {
+    const score = scoreDef(raw, entry);
+    if (score > bestScore) {
+      best = entry;
+      bestScore = score;
+    }
+  }
+  return bestScore >= minScore ? best!.def : null;
 }
 
 function interpolate(template: string, raw: string): string {

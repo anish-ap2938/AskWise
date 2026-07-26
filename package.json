@@ -1,15 +1,18 @@
 {
   "name": "askwise",
-  "version": "0.2.1",
+  "version": "0.2.6",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "rm -rf dist && tsc && vite build --mode production && node scripts/sanitize-manifest.mjs",
+    "fetch:model-libs": "node scripts/fetch-model-libs.mjs",
+    "build": "npm run fetch:model-libs && rm -rf dist && tsc && vite build --mode production && node scripts/sanitize-manifest.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "eval": "tsx scripts/eval.ts",
+    "train:export-seed": "tsx scripts/export-sft-seed.ts",
+    "train:check-env": "python training/00_check_env.py",
     "capture:assets": "CAPTURE=1 playwright test tests/e2e/capture-assets.spec.ts && node scripts/make-demo-gif.mjs",
     "zip": "npm run build && node scripts/zip.mjs"
   },

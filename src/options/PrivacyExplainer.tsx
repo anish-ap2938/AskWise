@@ -6,15 +6,26 @@ export function PrivacyExplainer() {
         <li>AskWise only reads text from the chat composer input — never chat history.</li>
         <li>Tier 1 rewrites run entirely offline in your browser.</li>
         <li>
-          Advanced defaults to a built-in on-device model (downloaded once into your browser;
-          inference stays on your PC). Optional Ollama / cloud BYOK if you enable them.
+          Advanced defaults to a built-in on-device model. Model weights may download once;
+          the inference runtime is packaged in the extension. Prompt inference stays on
+          your device.
         </li>
-        <li>Cloud API keys are optional, stored locally, and only used when you click Advanced.</li>
-        <li>Secrets are redacted locally before any LLM call.</li>
-        <li>No analytics, telemetry, or data sale. No backend server.</li>
+        <li>
+          AskWise attempts pattern-based redaction before local inference. It may not catch
+          every secret, so review generated prompts before using them.
+        </li>
+        <li>No analytics, telemetry, or data sale. No AskWise backend server.</li>
       </ul>
       <p className="text-xs text-gray-400">
-        See privacy-policy.html for Chrome Web Store Data Safety details.
+        Full policy:{" "}
+        <a
+          className="underline"
+          href="https://askwise-privacy.vercel.app/privacy-policy"
+          target="_blank"
+          rel="noreferrer"
+        >
+          askwise-privacy.vercel.app/privacy-policy
+        </a>
       </p>
     </section>
   );

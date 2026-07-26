@@ -1,5 +1,9 @@
 import type { StorageSchema } from "../shared/types";
 import { DEFAULT_STORAGE } from "../shared/types";
+import {
+  DEFAULT_ONDEVICE_MODEL,
+  LEGACY_DEFAULT_ONDEVICE_MODEL,
+} from "../shared/ondeviceModel";
 
 const STORAGE_KEY = "askwise";
 const LEGACY_STORAGE_KEY = "promptpilot";
@@ -42,19 +46,25 @@ function migrate(data: StorageSchema): StorageSchema {
     : data;
 
   const providers = base.providers ?? DEFAULT_STORAGE.providers;
-  const ondevice = providers.ondevice ?? DEFAULT_STORAGE.providers.ondevice;
-  const ladder = providers.ladder?.includes("ondevice")
-    ? providers.ladder
-    : (["ondevice", ...(providers.ladder ?? [])] as StorageSchema["providers"]["ladder"]);
+  const prev = providers.ondevice ?? DEFAULT_STORAGE.providers.ondevice;
+  // One-time: users still on the old slow default move to the fast model.
+  const model =
+    (base.schemaVersion ?? 1) < 2 &&
+    prev.model === LEGACY_DEFAULT_ONDEVICE_MODEL
+      ? DEFAULT_ONDEVICE_MODEL
+      : prev.model;
+  const ondevice = {
+    ...prev,
+    enabled: true,
+    model,
+  };
 
   return {
     ...DEFAULT_STORAGE,
     ...base,
+    schemaVersion: Math.max(base.schemaVersion ?? 1, 2),
     providers: {
-      ...DEFAULT_STORAGE.providers,
-      ...providers,
       ondevice,
-      ladder,
     },
   };
 }

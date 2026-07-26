@@ -1,30 +1,59 @@
 /** Browser-native WebLLM models that download into Cache Storage on first use. */
 
-export const ONDEVICE_MODELS = [
+import {
+  ASKWISE_FT_MODEL_ID,
+  askwiseFtConfigured,
+} from "./askwiseFtModel";
+
+const BASE_MODELS = [
+  {
+    id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+    label: "Llama 3.2 1B (fast stock)",
+    approxSizeGb: 0.7,
+    description: "Stock MLC model — fastest generic option before your fine-tune is published.",
+  },
   {
     id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 1.5B (recommended)",
+    label: "Qwen2.5 1.5B (stock base for FT)",
     approxSizeGb: 1.0,
-    description: "Best balance of speed and rewrite quality for most laptops.",
+    description: "Same family as the AskWise fine-tune. Use while training / before HF publish.",
   },
   {
     id: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 3B (higher quality)",
+    label: "Qwen2.5 3B (highest quality stock)",
     approxSizeGb: 1.9,
-    description: "Closer to Ollama-class rewrites; needs more VRAM/RAM.",
-  },
-  {
-    id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
-    label: "Llama 3.2 1B (fastest)",
-    approxSizeGb: 0.7,
-    description: "Smallest download — use on weaker devices.",
+    description: "Slowest stock option. Prefer the fine-tuned 1.5B once published.",
   },
 ] as const;
 
-export type OnDeviceModelId = (typeof ONDEVICE_MODELS)[number]["id"];
+const FT_MODEL = {
+  id: ASKWISE_FT_MODEL_ID,
+  label: "AskWise fine-tuned 1.5B (recommended)",
+  approxSizeGb: 1.0,
+  description:
+    "Your LoRA-trained prompt engineer, MLC weights from Hugging Face + packaged WebGPU wasm.",
+} as const;
 
-export const DEFAULT_ONDEVICE_MODEL: OnDeviceModelId =
-  "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
+export const ONDEVICE_MODELS = askwiseFtConfigured()
+  ? ([FT_MODEL, ...BASE_MODELS] as const)
+  : BASE_MODELS;
+
+export type OnDeviceModelId =
+  | (typeof BASE_MODELS)[number]["id"]
+  | typeof ASKWISE_FT_MODEL_ID;
+
+/** Prefer FT when configured; otherwise fast stock Llama. */
+export const DEFAULT_ONDEVICE_MODEL: OnDeviceModelId = askwiseFtConfigured()
+  ? ASKWISE_FT_MODEL_ID
+  : "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+
+/** Older default; migrate existing installs to the fast model once. */
+export const LEGACY_DEFAULT_ONDEVICE_MODEL: OnDeviceModelId =
+  "Qwen2.5-3B-Instruct-q4f16_1-MLC";
+
+/** Generation budget for Advanced JSON (structured + advanced). Shorter = much faster. */
+export const ONDEVICE_MAX_TOKENS = 420;
+export const ONDEVICE_TEMPERATURE = 0.1;
 
 export type OnDeviceStatus =
   | "idle"
@@ -50,13 +79,23 @@ export const DEFAULT_ONDEVICE_PROGRESS: OnDeviceProgress = {
   updatedAt: 0,
 };
 
-/** Hugging Face / MLC CDNs WebLLM fetches weights and WASM libs from. */
+/**
+ * Hugging Face / MLC CDNs used to download non-executable model weights.
+ * Keep in sync with manifest.json host_permissions + content_security_policy.connect-src.
+ */
 export const ONDEVICE_CONNECT_ORIGINS = [
   "https://huggingface.co",
   "https://*.huggingface.co",
   "https://cdn-lfs.huggingface.co",
   "https://cdn-lfs-us-1.huggingface.co",
+  "https://cdn-lfs.hf.co",
   "https://cdn-lfs-us-1.hf.co",
+  "https://cdn-lfs-eu-1.hf.co",
   "https://cas-bridge.xethub.hf.co",
-  "https://raw.githubusercontent.com",
+  "https://cas-server.xethub.hf.co",
+  "https://cas-server.xethub-eu.hf.co",
+  "https://transfer.xethub.hf.co",
+  "https://transfer.xethub-eu.hf.co",
+  "https://*.aws.cdn.hf.co",
+  "https://*.gcp.cdn.hf.co",
 ] as const;

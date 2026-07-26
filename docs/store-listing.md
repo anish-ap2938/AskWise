@@ -21,10 +21,9 @@ the structure that gets the best answer — without your text ever leaving your 
 - Tappable placeholders: click [paste job posting] and fill it in inline
 - Simple / Structured / Advanced variants for every prompt
 - Instant offline rewrites — no API key, no account, works forever
-- Built-in on-device AI (~1 GB) that downloads once into your browser and runs via WebGPU
-  for Advanced rewrites — no Ollama required
-- Optional larger local models via Ollama / LM Studio
-- Optional bring-your-own-key for Anthropic/OpenAI
+- Built-in on-device AI (~1–2 GB) that downloads once and generates every Advanced rewrite
+  and Refine update privately via WebGPU
+- Automatic spelling, grammar, and prompt-structure improvement in Advanced
 - Attach local files (.txt, .md, .pdf) as context — parsed on-device
 - Secret redaction (API keys, emails, tokens) before any AI call
 
@@ -32,7 +31,7 @@ the structure that gets the best answer — without your text ever leaving your 
 - No backend, no analytics, no telemetry, no account
 - Only reads the composer input — never chat history
 - Model weights download from Hugging Face / MLC once; inference stays on your device
-- API keys stored locally, never synced
+- No cloud AI API keys and no external prompt-processing service
 - Open source (MIT) — verify everything yourself
 
 ## Category
@@ -57,21 +56,30 @@ Do **not** use the bare domain root alone if reviewers treat it as an “owner s
 Source: `site/privacy-policy/` — redeploy with `cd site && vercel --prod`.
 Must stay public (no Vercel SSO): `vercel project protection disable askwise-privacy --sso`
 
+## Single purpose description
+AskWise improves user-selected prompt text in supported AI chat composers using local
+templates and a built-in on-device AI model.
+
 ## Data Safety (Chrome Web Store form)
+Declare that AskWise handles user data (do **not** select “no user data”).
+
+Check at least:
+- **Website content** — composer prompt text and optional attached files
+- **Personal communications** and/or **Personally identifiable information** if the form
+  presents those categories for prompt text that may contain chat content or identifiers
+
 | Question | Answer |
 |----------|--------|
-| Collects data? | No — processing is local. Optional Tier 2 uses on-device model, localhost Ollama, or user BYOK |
 | Data sold? | No |
 | Data used for tracking? | No |
-| Data linked to user? | No account system |
-| Encryption in transit | HTTPS for model weight download (once) and optional cloud BYOK |
-| Data deletion | Uninstall extension or clear templates in options |
+| Data linked to user? | No AskWise account; prompt inference stays on-device |
+| Encryption in transit | HTTPS for non-executable model data downloads |
+| Data deletion | Uninstall extension or clear settings/templates in options |
 
 ## Permissions justification
-- `storage`: save settings, templates, optional API keys, and on-device model progress locally
-- `offscreen`: run the WebGPU on-device language model in a hidden document (not visible to the page)
+- `storage`: save settings, templates, and on-device model progress locally
+- `offscreen`: run the WebGPU on-device language model in a hidden document
 - Site hosts (chatgpt.com, claude.ai, gemini.google.com, perplexity.ai, chat.deepseek.com,
-  copilot.microsoft.com): inject the improve widget on the composer only
-- Hugging Face / GitHub raw CDNs: download on-device model weights once into browser cache
-- `localhost`: optional Ollama / LM Studio local model
-- `api.anthropic.com` / `api.openai.com`: optional BYOK, only when user configures keys
+  copilot.microsoft.com): inject the improve widget and read the active composer
+- Hugging Face / MLC CDNs: download non-executable model weights/config once into browser cache
+  (JS/WASM inference runtime is packaged in the extension)

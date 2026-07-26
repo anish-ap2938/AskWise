@@ -4,6 +4,7 @@ import { InputWatcher } from "../inputWatcher";
 import { improveTier1, type ImproveResult } from "../../shared/improve";
 import type { ModeId } from "../../shared/types";
 import { withAttachments, type Attachment } from "../../shared/attachment";
+import { redactSecrets } from "../../shared/redact";
 import { Pill } from "./Pill";
 import { Popover } from "./Popover";
 import { Toast } from "./Toast";
@@ -181,13 +182,16 @@ export function WidgetApp({ adapter, enabled }: WidgetAppProps) {
   const handleRequestTier2 = () => {
     if (!result) return;
     setStreamingText("");
+    setTier2Note("Generating with the on-device model…");
+    const rawWithContext = withAttachments(text, attachments);
+    const redacted = redactSecrets(rawWithContext);
     const port = chrome.runtime.connect({ name: "tier2-stream" });
     port.postMessage({
       kind: "IMPROVE_REQUEST",
       payload: {
-        raw: text,
-        redacted: result.redaction.redacted,
-        redactions: result.redaction.map,
+        raw: rawWithContext,
+        redacted: redacted.redacted,
+        redactions: redacted.map,
         mode,
         target: targetModel,
         wantTier2: true,
@@ -214,9 +218,7 @@ export function WidgetApp({ adapter, enabled }: WidgetAppProps) {
             : prev
         );
         setTier2Note(
-          p.source === "llm_fallback_local"
-            ? "Local template shown — no LLM provider available."
-            : ""
+          p.source === "llm" ? "Generated privately by the on-device model." : ""
         );
         port.disconnect();
       }

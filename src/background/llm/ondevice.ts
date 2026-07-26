@@ -61,7 +61,7 @@ export async function ensureOnDeviceModel(
       status: "unsupported",
       model,
       progress: 0,
-      text: "On-device AI needs Chrome 109+ with WebGPU.",
+      text: "On-device AI needs Chrome 113+ with WebGPU.",
       error: "unsupported",
     });
   }
@@ -190,7 +190,8 @@ export async function callOnDeviceLlm(
     onChunk
       ? (accumulated) => {
           const partial = tryParsePartial(accumulated);
-          if (partial?.structured) onChunk(partial.structured);
+          if (partial?.advanced) onChunk(partial.advanced);
+          else if (partial?.structured) onChunk(partial.structured);
         }
       : undefined
   );

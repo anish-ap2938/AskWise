@@ -205,7 +205,9 @@ export function Popover({
           <ModeChip mode={mode} onChange={onModeChange} />
           {result.subRecipe && (
             <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
-              {result.subRecipe.label}
+              {result.subRecipe.category
+                ? `${result.subRecipe.category} · ${result.subRecipe.label}`
+                : result.subRecipe.label}
             </span>
           )}
         </span>

@@ -59,32 +59,14 @@ export function OnDeviceSection({ storage, onPersist }: Props) {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-semibold">On-device AI (automatic)</h2>
+      <h2 className="text-lg font-semibold">On-device AI</h2>
       <p className="text-sm text-gray-600">
-        A small instruct model (~1 GB) downloads into your browser on install and runs
-        privately via WebGPU. Your Tier 1 templates and rewrite prompts stay the same —
-        this only powers Advanced when no Ollama server is available.
+        AskWise uses this browser model for every Advanced rewrite and Refine request.
+        It downloads once (about 0.7–2 GB), then runs privately on your device via WebGPU.
+        Simple and Structured remain instant local templates. To ship a fine-tuned model,
+        train locally (see <code>training/README.md</code>), publish MLC weights to Hugging
+        Face, then set <code>ASKWISE_FT_HF_REPO</code> and rebuild.
       </p>
-
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={storage.providers.ondevice.enabled}
-          onChange={(e) =>
-            onPersist({
-              ...storage,
-              providers: {
-                ...storage.providers,
-                ondevice: {
-                  ...storage.providers.ondevice,
-                  enabled: e.target.checked,
-                },
-              },
-            })
-          }
-        />
-        <span>Enable built-in on-device model</span>
-      </label>
 
       <label className="block">
         <span className="text-sm text-gray-600">Model</span>
@@ -128,7 +110,8 @@ export function OnDeviceSection({ storage, onPersist }: Props) {
         )}
         {status === "unsupported" && (
           <p className="text-xs text-amber-700">
-            Needs Chrome 109+ with WebGPU. Firefox users can use Ollama below instead.
+            Advanced and Refine need Chrome 113+ with WebGPU. Simple and Structured
+            continue to work without WebGPU.
           </p>
         )}
       </div>

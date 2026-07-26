@@ -11,3 +11,8 @@ playwright-report/
 .env
 .env.*
 *.local
+public/model-libs/*.wasm
+training/.venv/
+training/output/
+training/data/*.jsonl
+!training/data/.gitkeep

@@ -119,21 +119,12 @@ export interface StorageSchema {
       enabled: boolean;
       model: OnDeviceModelId;
     };
-    local: {
-      enabled: boolean;
-      baseUrl: string;
-      model: string;
-      lastDetected: number | null;
-    };
-    anthropicKey?: string;
-    openaiKey?: string;
-    ladder: ("ondevice" | "local" | "anthropic" | "openai")[];
   };
   templates: SavedTemplate[];
 }
 
 export const DEFAULT_STORAGE: StorageSchema = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   settings: {
     enabledSites: {
       chatgpt: true,
@@ -154,13 +145,6 @@ export const DEFAULT_STORAGE: StorageSchema = {
       enabled: true,
       model: DEFAULT_ONDEVICE_MODEL,
     },
-    local: {
-      enabled: true,
-      baseUrl: "http://localhost:11434",
-      model: "qwen3:8b",
-      lastDetected: null,
-    },
-    ladder: ["ondevice", "local", "anthropic", "openai"],
   },
   templates: [],
 };
@@ -214,7 +198,7 @@ export const improveResponseSchema = z.object({
       missing: z.array(z.string()),
       band: z.enum(["weak", "okay", "strong"]),
     }),
-    source: z.enum(["local", "llm", "llm_fallback_local"]),
+    source: z.enum(["local", "llm"]),
     warnings: z.array(z.string()),
   }),
 });

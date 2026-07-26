@@ -4,6 +4,7 @@ export const builderPack: SubRecipeDef[] = [
   {
     id: "app_builder/business_site",
     parent: "app_builder",
+    category: "website",
     label: "Business Website",
     triggers: ["website for my", "site for my", "landing page", "portfolio site", "business (site|website)"],
     structured: `You are a web developer who ships small-business sites that actually convert. {{request}}
@@ -20,6 +21,7 @@ export const builderPack: SubRecipeDef[] = [
   {
     id: "app_builder/extension",
     parent: "app_builder",
+    category: "extension",
     label: "Browser Extension",
     triggers: ["chrome extension", "browser extension", "firefox (extension|addon)"],
     structured: `You are a browser-extension developer who knows Manifest V3's sharp edges. {{request}}
@@ -37,6 +39,7 @@ export const builderPack: SubRecipeDef[] = [
   {
     id: "app_builder/automation_bot",
     parent: "app_builder",
+    category: "automation",
     label: "Bot / Automation",
     triggers: ["\\bbot\\b", "automat(e|ion)", "scraper", "cron", "workflow that"],
     structured: `You are an automation engineer who builds small reliable bots. {{request}}
@@ -53,6 +56,7 @@ export const builderPack: SubRecipeDef[] = [
   {
     id: "app_builder/mvp",
     parent: "app_builder",
+    category: "mvp",
     label: "MVP / Startup Idea",
     triggers: ["mvp", "startup", "saas", "my (app|product) idea", "validate"],
     structured: `You are a YC-style technical cofounder. {{request}}

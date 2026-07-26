@@ -2,13 +2,18 @@ import { classify } from "./classify";
 import { scorePrompt } from "./score";
 import { redactSecrets } from "./redact";
 import { getRecipe } from "./recipes";
-import { findSubRecipe, renderSubRecipe } from "./subrecipes";
+import {
+  findBestSubRecipe,
+  findSubRecipe,
+  renderSubRecipe,
+  subRecipeCategory,
+} from "./subrecipes";
 import type { ModeId, ScoreResult, TargetModel, VariantSet } from "./types";
 
 export interface ImproveResult {
   mode: ModeId;
   /** Set when a specialized sub-recipe matched (e.g. resume_job/ats). */
-  subRecipe?: { id: string; label: string };
+  subRecipe?: { id: string; label: string; category: string };
   variants: VariantSet;
   scoreBefore: ScoreResult;
   scoreAfter: ScoreResult;
@@ -20,10 +25,14 @@ export function improveTier1(
   targetModel: TargetModel,
   modeOverride?: ModeId
 ): ImproveResult {
-  const mode = modeOverride ?? classify(raw);
+  const classified = modeOverride ?? classify(raw);
   const ctx = { targetModel };
 
-  const sub = findSubRecipe(raw, mode);
+  const local = findSubRecipe(raw, classified);
+  const global = local ? null : findBestSubRecipe(raw);
+  const sub = local ?? global;
+  const mode = sub && !modeOverride ? sub.parent : classified;
+
   const variants = sub
     ? renderSubRecipe(sub, raw, ctx)
     : getRecipe(mode).localRewrite(raw, ctx);
@@ -34,7 +43,13 @@ export function improveTier1(
 
   return {
     mode,
-    subRecipe: sub ? { id: sub.id, label: sub.label } : undefined,
+    subRecipe: sub
+      ? {
+          id: sub.id,
+          label: sub.label,
+          category: subRecipeCategory(sub),
+        }
+      : undefined,
     variants,
     scoreBefore,
     scoreAfter,

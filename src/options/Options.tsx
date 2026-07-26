@@ -1,16 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import type { SavedTemplate, StorageSchema } from "../shared/types";
 import { DEFAULT_STORAGE } from "../shared/types";
-import { detectOllama } from "../background/llm/local";
-import { getOllamaCorsMessage } from "../background/llm/providerRouter";
-import { KeyForm } from "./KeyForm";
 import { OnDeviceSection } from "./OnDeviceSection";
 import { PrivacyExplainer } from "./PrivacyExplainer";
 
 export function Options() {
   const [storage, setStorage] = useState<StorageSchema>(DEFAULT_STORAGE);
-  const [models, setModels] = useState<string[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState<string>("");
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -27,13 +22,6 @@ export function Options() {
             ...DEFAULT_STORAGE.providers.ondevice,
             ...data.providers?.ondevice,
           },
-          local: {
-            ...DEFAULT_STORAGE.providers.local,
-            ...data.providers?.local,
-          },
-          ladder: data.providers?.ladder?.includes("ondevice")
-            ? data.providers.ladder
-            : DEFAULT_STORAGE.providers.ladder,
         },
       };
       setStorage(merged);
@@ -51,29 +39,6 @@ export function Options() {
       setTimeout(() => setSaved(false), 2000);
     });
   }, []);
-
-  const testConnection = async () => {
-    const result = await detectOllama(storage.providers.local.baseUrl);
-    if (result.ok) {
-      setModels(result.models);
-      setConnectionStatus(`Connected — ${result.models.length} model(s) found`);
-      persist({
-        ...storage,
-        providers: {
-          ...storage.providers,
-          local: { ...storage.providers.local, lastDetected: Date.now() },
-        },
-      });
-    } else if (result.status === 403) {
-      setConnectionStatus(getOllamaCorsMessage());
-    } else if (result.status === 0) {
-      setConnectionStatus(
-        "Ollama not detected. Install from ollama.com, then run: ollama pull qwen3:4b"
-      );
-    } else {
-      setConnectionStatus(`Error: HTTP ${result.status}`);
-    }
-  };
 
   const updateTemplate = (id: string, action: "delete") => {
     if (action === "delete") {
@@ -166,105 +131,6 @@ export function Options() {
       </section>
 
       <OnDeviceSection storage={storage} onPersist={persist} />
-
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold">Optional: Ollama / LM Studio</h2>
-        <p className="text-sm text-gray-600">
-          For larger models (Qwen3 4B/8B) if you already run a local server. Falls through
-          after the built-in on-device model.
-        </p>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={storage.providers.local.enabled}
-            onChange={(e) =>
-              persist({
-                ...storage,
-                providers: {
-                  ...storage.providers,
-                  local: { ...storage.providers.local, enabled: e.target.checked },
-                },
-              })
-            }
-          />
-          <span>Enable Ollama / LM Studio</span>
-        </label>
-        <label className="block">
-          <span className="text-sm text-gray-600">Base URL</span>
-          <input
-            className="mt-1 block w-full rounded border px-3 py-2"
-            value={storage.providers.local.baseUrl}
-            onChange={(e) =>
-              persist({
-                ...storage,
-                providers: {
-                  ...storage.providers,
-                  local: { ...storage.providers.local, baseUrl: e.target.value },
-                },
-              })
-            }
-          />
-        </label>
-        <label className="block">
-          <span className="text-sm text-gray-600">Model</span>
-          {models.length > 0 ? (
-            <select
-              className="mt-1 block w-full rounded border px-3 py-2"
-              value={storage.providers.local.model}
-              onChange={(e) =>
-                persist({
-                  ...storage,
-                  providers: {
-                    ...storage.providers,
-                    local: { ...storage.providers.local, model: e.target.value },
-                  },
-                })
-              }
-            >
-              {models.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              className="mt-1 block w-full rounded border px-3 py-2"
-              value={storage.providers.local.model}
-              onChange={(e) =>
-                persist({
-                  ...storage,
-                  providers: {
-                    ...storage.providers,
-                    local: { ...storage.providers.local, model: e.target.value },
-                  },
-                })
-              }
-            />
-          )}
-        </label>
-        <button
-          type="button"
-          className="rounded bg-violet-600 px-4 py-2 text-white text-sm"
-          onClick={testConnection}
-        >
-          Test connection
-        </button>
-        {connectionStatus && (
-          <pre className="text-xs bg-gray-100 p-3 rounded whitespace-pre-wrap">{connectionStatus}</pre>
-        )}
-      </section>
-
-      <KeyForm
-        anthropicKey={storage.providers.anthropicKey ?? ""}
-        openaiKey={storage.providers.openaiKey ?? ""}
-        onChange={(anthropicKey, openaiKey) =>
-          persist({
-            ...storage,
-            providers: { ...storage.providers, anthropicKey, openaiKey },
-          })
-        }
-      />
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Saved templates ({storage.templates.length})</h2>

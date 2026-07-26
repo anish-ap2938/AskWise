@@ -3,7 +3,7 @@
 ## Order of operations
 
 1. **Repo public** — LICENSE, README (with demo GIF), CONTRIBUTING, PRIVACY are in place.
-2. **Chrome Web Store** — submit `askwise-0.2.0.zip` with `docs/store-listing.md` + `store-assets/`.
+2. **Chrome Web Store** — submit `askwise-0.2.3.zip` with `docs/store-listing.md` + `store-assets/`.
    Review typically takes a few days; broad host permissions may trigger extra review — the
    justifications in the listing answer them.
 3. **Show HN** — after the store listing is live (link both store + repo).
@@ -22,8 +22,8 @@ format — so I built a Chrome extension that closes it automatically.
 How it works: a rule-based intent classifier routes your prompt to one of 9 modes and ~36
 specialized templates — ATS resume checks, slow-query debugging, salary negotiation, cold
 outreach. You get three variants (Simple / Structured / Advanced), a before/after score
-from a deterministic rubric, and a diff of what was added. Advanced can use a built-in
-on-device model (downloads once into the browser) or your own Ollama / API key.
+from a deterministic rubric, and a diff of what was added. Advanced uses a built-in
+on-device model that downloads once and runs privately via WebGPU.
 
 The part I care most about: nothing leaves your device unless you opt in. No server, no
 account, no telemetry. It's MIT-licensed — templates are pure data, so adding a template
@@ -51,7 +51,7 @@ Repo: [link] · Store: [link]
 - [x] Issue templates (bug / template-pack / fixture batch) + `GOOD_FIRST_ISSUES.md`
 - [x] Store listing + privacy copy updated for on-device WebLLM / `offscreen`
 - [x] Smoke checklist in `docs/smoke-checklist.md`
-- [x] Version `0.2.0` + `npm run zip` → `askwise-0.2.0.zip`
+- [x] Version `0.2.3` + `npm run zip` → `askwise-0.2.3.zip`
 - [ ] Open the six good-first issues from `.github/GOOD_FIRST_ISSUES.md` on GitHub
-- [ ] Tag `v0.2.0` release and attach `askwise-0.2.0.zip`
+- [ ] Tag `v0.2.3` release and attach `askwise-0.2.3.zip`
 - [ ] Manual host smoke on live ChatGPT/Claude/Gemini/etc. (see smoke checklist)

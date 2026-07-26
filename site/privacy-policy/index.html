@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Privacy Policy — AskWise Chrome Extension</title>
   <meta name="robots" content="index,follow" />
-  <meta name="description" content="Official privacy policy for the AskWise Chrome extension. Describes what data is accessed, stored, and transmitted." />
+  <meta name="description" content="Official privacy policy for the AskWise Chrome extension." />
   <style>
     body {
       margin: 0;
@@ -14,11 +14,7 @@
       color: #111;
       line-height: 1.65;
     }
-    main {
-      max-width: 740px;
-      margin: 0 auto;
-      padding: 40px 20px 96px;
-    }
+    main { max-width: 740px; margin: 0 auto; padding: 40px 20px 96px; }
     h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 0.4rem; }
     h2 { font-size: 1.2rem; margin: 2rem 0 0.55rem; }
     p, li { font-size: 1rem; }
@@ -59,7 +55,19 @@
       <strong>not</strong> use analytics or advertising trackers.
     </p>
 
-    <h2>2. Information the extension accesses</h2>
+    <h2>2. Chrome Web Store Limited Use Compliance</h2>
+    <p>
+      AskWise’s use of information complies with the Chrome Web Store User Data Policy, including
+      the Limited Use requirements. AskWise uses user data only to provide or improve its
+      disclosed prompt-improvement functionality and does not use or transfer user data for
+      advertising, creditworthiness, or unrelated purposes.
+    </p>
+    <p>
+      The use of information received from Google APIs will adhere to the Chrome Web Store User
+      Data Policy, including the Limited Use requirements.
+    </p>
+
+    <h2>3. Information the extension accesses</h2>
     <p>When you use AskWise, the extension may access:</p>
     <ul>
       <li>
@@ -67,99 +75,123 @@
         in the input box on a supported AI website, only when you open or use AskWise.
       </li>
       <li>
+        <strong>User-selected file attachments</strong> — files you choose for context
+        (<code>.txt</code>, <code>.md</code>, <code>.pdf</code>), read with browser file APIs and
+        parsed on your device.
+      </li>
+      <li>
         <strong>Local settings and saved templates</strong> — preferences you choose in the
         extension options page, stored on your device.
       </li>
-      <li>
-        <strong>Optional API keys you enter</strong> — Anthropic or OpenAI keys, if you choose to
-        enable bring-your-own-key (BYOK).
-      </li>
-      <li>
-        <strong>Optional local files you attach</strong> — files you select for context (.txt,
-        .md, .pdf), read with browser file APIs and parsed on your device.
-      </li>
     </ul>
     <p>
-      AskWise does <strong>not</strong> read your full browsing history, does <strong>not</strong>
-      read chat message history outside the active composer when you use Improve, and does
-      <strong>not</strong> collect health, financial, or location data for any AskWise service.
+      AskWise does not intentionally request or separately collect health, financial, or precise
+      location information. However, prompt text or files selected by a user may contain such
+      information. AskWise processes that content only to provide the features described in this
+      policy.
+    </p>
+    <p>
+      AskWise does not read your full browsing history and does not read chat history outside the
+      active composer when you use Improve.
     </p>
 
-    <h2>3. How information is used</h2>
+    <h2>4. How information is used</h2>
     <ul>
       <li>To classify and rewrite your prompt into a clearer, structured prompt.</li>
       <li>To show before/after scoring, diffs, and variants inside the extension UI.</li>
-      <li>To remember your settings, templates, and optional provider configuration.</li>
-      <li>To run optional Advanced rewrites using on-device, local, or user-configured cloud models.</li>
+      <li>To remember your settings, templates, and on-device model selection.</li>
+      <li>To run Advanced rewrites and Refine requests with the built-in on-device model.</li>
     </ul>
     <p>
       We do not sell user data. We do not use user data for advertising. We do not use user data
-      to determine creditworthiness.
+      to determine creditworthiness or for lending purposes.
     </p>
 
-    <h2>4. What leaves your device</h2>
+    <h2>5. What leaves your device</h2>
     <ul>
       <li>
         <strong>Default / Simple / Structured improve:</strong> processed entirely on your device.
         No prompt text is sent to an AskWise server (there is none).
       </li>
       <li>
-        <strong>On-device model download:</strong> AskWise may download model weights and related
-        WebAssembly runtime assets from Hugging Face / MLC content delivery networks into your
-        browser cache. Your prompts are <strong>not</strong> sent to those CDNs. Inference runs
-        locally via WebGPU in an extension offscreen document.
+        <strong>Advanced / Refine:</strong> prompt inference runs locally in the extension using
+        the built-in WebLLM model and WebGPU. Prompt content is not sent to an external AI provider.
       </li>
       <li>
-        <strong>Optional local model server:</strong> if you enable Ollama or LM Studio, Advanced
-        requests may be sent to an address you configure (typically <code>localhost</code> on your
-        machine).
-      </li>
-      <li>
-        <strong>Optional cloud BYOK:</strong> if you paste your own Anthropic or OpenAI API key,
-        Advanced rewrite requests are sent directly to that provider using your key. Secrets such
-        as tokens and emails are redacted locally before the request when possible.
+        <strong>On-device model data (once per model):</strong> AskWise may download model weights,
+        tokenizer files, model configuration files, and other non-executable model data from
+        Hugging Face or MLC content delivery networks into the browser’s Cache Storage. The
+        JavaScript and WebAssembly runtime used for inference is included in the installed
+        extension package. AskWise does not download or execute remotely hosted code. Your prompts
+        are <strong>not</strong> sent to those CDNs; inference runs locally via WebGPU.
       </li>
     </ul>
 
-    <h2>5. Storage and retention</h2>
+    <h2>6. Redaction and review</h2>
     <p>
-      Settings, templates, optional API keys, and on-device model download progress are stored in
-      <code>chrome.storage.local</code> on your device. Cached model weights may be stored in the
-      browser’s Cache Storage. This data remains until you clear it in the extension options, clear
-      site/extension data in Chrome, or uninstall AskWise. AskWise does not retain copies of your
-      prompts or keys on any AskWise-operated server.
+      Before on-device inference, AskWise attempts to redact common sensitive-data patterns, such
+      as API tokens, email addresses, and payment-card numbers. Automated redaction may not identify
+      every sensitive value, so users should review generated prompts before using them.
     </p>
 
-    <h2>6. Third parties</h2>
+    <h2>7. Websites where AskWise operates</h2>
     <p>
-      AskWise may communicate with the following third parties only for the features described
-      above:
+      AskWise runs a content script on supported AI chat websites to display its interface and
+      access the active composer. AskWise does not independently transmit prompt text to those
+      websites. A website receives the resulting prompt only when the user submits it through that
+      website normally.
     </p>
+
+    <h2>8. Third-party services</h2>
     <ul>
-      <li>Supported AI chat websites (to inject the improve UI into the composer).</li>
-      <li>Hugging Face / MLC CDNs (model weight download only).</li>
-      <li>Optional: Anthropic API or OpenAI API when you provide a key.</li>
-      <li>Optional: a local model server you configure.</li>
+      <li>
+        <strong>Hugging Face or MLC infrastructure</strong> receives model-download requests for
+        non-executable model data, but does not receive prompt content.
+      </li>
     </ul>
     <p>
-      Those third parties’ privacy practices are governed by their own policies. AskWise does not
-      control how a provider you choose may handle data you send with your own key.
+      AskWise does not send prompt content to an AskWise server or an external AI provider.
+      Supported AI chat websites receive the resulting prompt only when the user submits it there
+      normally.
     </p>
 
-    <h2>7. Children’s privacy</h2>
+    <h2>9. Storage and retention</h2>
+    <p>
+      Settings, templates, and on-device model download progress are stored in
+      <code>chrome.storage.local</code> on your device. Cached model weights may be
+      stored in the browser’s Cache Storage. This data remains until you clear it in the extension
+      options, clear site/extension data in Chrome, or uninstall AskWise. AskWise does not retain
+      copies of your prompts on any AskWise-operated server.
+    </p>
+
+    <h2>10. Permissions</h2>
+    <ul>
+      <li><code>storage</code> — settings, templates, and model download progress</li>
+      <li><code>offscreen</code> — run the on-device WebGPU model in a hidden document</li>
+      <li>
+        Host permissions for supported chat sites — inject the composer widget and read the active
+        composer
+      </li>
+      <li>
+        Hugging Face / related CDNs — download non-executable on-device model data once into browser
+        cache
+      </li>
+    </ul>
+
+    <h2>11. Children’s privacy</h2>
     <p>
       AskWise is not directed to children under 13, and we do not knowingly collect personal
       information from children.
     </p>
 
-    <h2>8. Changes to this policy</h2>
+    <h2>12. Changes to this policy</h2>
     <p>
       We may update this Privacy Policy from time to time. The “Last updated” date at the top of
       this page will change when we do. Continued use of AskWise after an update means you accept
       the revised policy.
     </p>
 
-    <h2>9. Contact</h2>
+    <h2>13. Contact</h2>
     <p>
       For privacy questions about AskWise, open an issue at
       <a href="https://github.com/anish-ap2938/AskWise/issues">https://github.com/anish-ap2938/AskWise/issues</a>

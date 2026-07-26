@@ -2,8 +2,7 @@ import { improveTier1 } from "../shared/improve";
 import { messageSchema } from "../shared/types";
 import { DEFAULT_ONDEVICE_MODEL, type OnDeviceModelId } from "../shared/ondeviceModel";
 import { getStorage, updateStorage } from "./storage";
-import { getOllamaCorsMessage, runProviderLadder } from "./llm/providerRouter";
-import { LocalLlmError } from "./llm/local";
+import { runOnDeviceRewrite } from "./llm/ondeviceRewrite";
 import {
   callOnDeviceRaw,
   ensureOnDeviceModel,
@@ -91,7 +90,7 @@ export function setupRouter(): void {
       const tier1 = improveTier1(payload.raw, payload.target, payload.mode);
 
       try {
-        const result = await runProviderLadder({
+        const result = await runOnDeviceRewrite({
           ...payload,
           onChunk: (text) => {
             port.postMessage({ kind: "STREAM_CHUNK", payload: { text } });
@@ -109,23 +108,15 @@ export function setupRouter(): void {
           },
         });
       } catch (err) {
-        if (err instanceof LocalLlmError && err.status === 403) {
-          port.postMessage({
-            kind: "LLM_ERROR",
-            payload: {
-              provider: "local",
-              status: 403,
-              message: getOllamaCorsMessage(),
-            },
-          });
-          return;
-        }
         port.postMessage({
           kind: "LLM_ERROR",
           payload: {
-            provider: "unknown",
+            provider: "ondevice",
             status: 0,
-            message: err instanceof Error ? err.message : "LLM request failed",
+            message:
+              err instanceof Error
+                ? err.message
+                : "The on-device rewrite failed. Try again after the model is ready.",
           },
         });
       }
@@ -168,7 +159,7 @@ async function handleImprove(payload: {
   }
 
   try {
-    const result = await runProviderLadder(payload);
+    const result = await runOnDeviceRewrite(payload);
     return {
       kind: "IMPROVE_RESPONSE" as const,
       payload: {
@@ -180,29 +171,19 @@ async function handleImprove(payload: {
       },
     };
   } catch (err) {
-    if (err instanceof LocalLlmError && err.status === 403) {
-      return {
-        kind: "LLM_ERROR" as const,
-        payload: {
-          provider: "local",
-          status: 403,
-          message: getOllamaCorsMessage(),
-        },
-      };
-    }
     return {
-      kind: "IMPROVE_RESPONSE" as const,
+      kind: "LLM_ERROR" as const,
       payload: {
-        variants: tier1.variants,
-        scoreBefore: tier1.scoreBefore,
-        scoreAfter: tier1.scoreAfter,
-        source: "llm_fallback_local" as const,
-        warnings: ["LLM request failed"],
+        provider: "ondevice",
+        status: 0,
+        message:
+          err instanceof Error
+            ? err.message
+            : "The on-device rewrite failed. Try again after the model is ready.",
       },
     };
   }
 }
-
 async function handleRefine(payload: {
   currentPrompt: string;
   history: RefineChatMessage[];
@@ -216,39 +197,13 @@ async function handleRefine(payload: {
   );
 
   try {
-    // Prefer on-device; if disabled/unavailable, hit Ollama with the same refine schema.
-    let content: string;
-    if (storage.providers.ondevice?.enabled) {
-      content = await callOnDeviceRaw(storage.providers, system, user);
-    } else if (storage.providers.local.enabled) {
-      content = await callLocalRaw(storage.providers.local.baseUrl, storage.providers.local.model, system, user);
-    } else {
-      throw new OnDeviceLlmError(0, "No local model available");
-    }
+    const content = await callOnDeviceRaw(storage.providers, system, user);
 
     return {
       kind: "REFINE_RESPONSE" as const,
       payload: parseRefineContent(content),
     };
   } catch (err) {
-    // One fallback: if on-device failed, try Ollama once.
-    if (storage.providers.ondevice?.enabled && storage.providers.local.enabled) {
-      try {
-        const content = await callLocalRaw(
-          storage.providers.local.baseUrl,
-          storage.providers.local.model,
-          system,
-          user
-        );
-        return {
-          kind: "REFINE_RESPONSE" as const,
-          payload: parseRefineContent(content),
-        };
-      } catch {
-        // fall through
-      }
-    }
-
     const message =
       err instanceof OnDeviceLlmError
         ? err.message
@@ -262,48 +217,8 @@ async function handleRefine(payload: {
         status: 0,
         message:
           message +
-          " — wait for the on-device model to finish downloading (or enable Ollama).",
+          " — wait for the on-device model to finish downloading, then try again.",
       },
     };
-  }
-}
-
-async function callLocalRaw(
-  baseUrl: string,
-  model: string,
-  system: string,
-  user: string
-): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
-  try {
-    const isQwen3 = /qwen3/i.test(model);
-    const response = await fetch(`${baseUrl.replace(/\/$/, "")}/v1/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model,
-        temperature: 0.3,
-        max_tokens: 900,
-        response_format: { type: "json_object" },
-        ...(isQwen3 ? { think: false } : {}),
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-      }),
-    });
-    if (!response.ok) {
-      throw new Error(`Local model HTTP ${response.status}`);
-    }
-    const data = (await response.json()) as {
-      choices: Array<{ message?: { content?: string } }>;
-    };
-    const content = data.choices[0]?.message?.content?.trim();
-    if (!content) throw new Error("Empty local model response");
-    return content;
-  } finally {
-    clearTimeout(timeout);
   }
 }

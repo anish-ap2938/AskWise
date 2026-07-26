@@ -15,9 +15,9 @@ Regenerate store screenshots + this GIF: `npm run capture:assets`
 ## Why it's different
 
 - **Local-first, actually.** Classification, templates, and scoring are plain local code.
-  Advanced rewrites use a built-in on-device model (WebLLM / WebGPU, ~1 GB, auto-downloads
-  on install), then optional Ollama/LM Studio or your own API key. No server, no account,
-  no telemetry. See [PRIVACY.md](PRIVACY.md).
+  Every Advanced rewrite and Refine request uses the built-in on-device model (WebLLM /
+  WebGPU, ~1–2 GB, downloaded once). No server, API key, account, or telemetry. See
+  [PRIVACY.md](PRIVACY.md).
 - **An intent classifier, not a text expander.** A rule engine (100% on gated fixtures)
   routes your prompt to one of 9 modes and 36+ specialized sub-recipes (ATS resume checks,
   salary negotiation, slow-query debugging, cold outreach, …).
@@ -46,16 +46,9 @@ Visit chatgpt.com, type a prompt (8+ characters), click the **⚡ Improve** pill
 ## On-device AI for Advanced rewrites
 
 The instant (Tier 1) rewrites work offline forever. For LLM-powered Advanced rewrites,
-AskWise downloads a small instruct model (~1 GB, Qwen2.5 1.5B by default) into the browser
-on install and runs it locally via WebGPU (Chrome 109+). No Ollama required.
-
-**Optional upgrade — larger local models via Ollama:**
-
-1. Install [Ollama](https://ollama.com) → `ollama pull qwen3:8b`
-2. Set `OLLAMA_ORIGINS=chrome-extension://*` (environment variable) and restart Ollama
-3. AskWise options → **Test connection**
-
-Or paste your own Anthropic/OpenAI key (BYOK) — secrets are redacted locally before any call.
+AskWise downloads Qwen2.5 3B (~1.9 GB by default) into the browser and runs it locally via
+WebGPU (Chrome 113+). The model corrects spelling and grammar, preserves the user's intent,
+and applies mode-specific prompt-engineering rules. No prompt is sent to an external AI API.
 
 ## Development
 
@@ -63,7 +56,6 @@ Or paste your own Anthropic/OpenAI key (BYOK) — secrets are redacted locally b
 npm run dev       # Vite dev server (fixture pages at /tests/fixtures/)
 npm test          # Unit tests (Vitest) — includes the 290+ fixture classifier gate
 npm run eval      # Quality report: classification accuracy + rewrite score lift
-npm run eval -- --judge   # + local LLM judges rewrite quality 1-10 (needs Ollama)
 npm run test:e2e       # E2E / smoke tests (Playwright)
 npm run capture:assets # Store screenshots (1280×800) + docs/assets/demo.gif
 npm run build          # Production build → dist/
@@ -81,7 +73,7 @@ content script (per site adapter)
        ├─ sub-recipes + recipes (templates) ── instant, local
        ├─ score (deterministic rubric) ─────── instant, local
        └─ messages ─→ service worker
-                        └─ Tier 2 LLM ladder: on-device WebLLM → Ollama → BYOK → Tier 1
+                        └─ Advanced / Refine: on-device WebLLM only
 ```
 
 Key directories: `src/shared/` (classify, score, recipes, sub-recipe packs — all pure and

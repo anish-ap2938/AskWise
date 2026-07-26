@@ -138,7 +138,7 @@ export function Onboarding() {
       <section className="rounded-xl border border-violet-200 bg-violet-50/40 p-5 space-y-3">
         <h2 className="text-base font-semibold">Downloading on-device AI…</h2>
         <p className="text-sm text-gray-600">
-          A ~1 GB private model is downloading into your browser for Advanced rewrites.
+          A ~1.9 GB private model is downloading into your browser for Advanced rewrites.
           Instant Simple/Structured rewrites already work — no wait needed.
         </p>
         <div className="h-2 overflow-hidden rounded-full bg-white">

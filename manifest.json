@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AskWise",
-  "version": "0.2.1",
+  "version": "0.2.6",
   "description": "Turn rough AI prompts into structured, model-ready prompts — locally and privately.",
   "permissions": ["storage", "offscreen"],
   "host_permissions": [
@@ -15,17 +15,20 @@
     "https://perplexity.ai/*",
     "https://chat.deepseek.com/*",
     "https://copilot.microsoft.com/*",
-    "http://localhost/*",
-    "http://127.0.0.1/*",
-    "https://api.anthropic.com/*",
-    "https://api.openai.com/*",
     "https://huggingface.co/*",
     "https://*.huggingface.co/*",
     "https://cdn-lfs.huggingface.co/*",
     "https://cdn-lfs-us-1.huggingface.co/*",
+    "https://cdn-lfs.hf.co/*",
     "https://cdn-lfs-us-1.hf.co/*",
+    "https://cdn-lfs-eu-1.hf.co/*",
     "https://cas-bridge.xethub.hf.co/*",
-    "https://raw.githubusercontent.com/*"
+    "https://cas-server.xethub.hf.co/*",
+    "https://cas-server.xethub-eu.hf.co/*",
+    "https://transfer.xethub.hf.co/*",
+    "https://transfer.xethub-eu.hf.co/*",
+    "https://*.aws.cdn.hf.co/*",
+    "https://*.gcp.cdn.hf.co/*"
   ],
   "background": {
     "service_worker": "src/background/index.ts",
@@ -62,7 +65,7 @@
     "128": "icons/128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' data: blob: http://127.0.0.1:11434 http://localhost:11434 http://127.0.0.1:1234 http://localhost:1234 https://api.anthropic.com https://api.openai.com https://huggingface.co https://*.huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs-us-1.huggingface.co https://cdn-lfs-us-1.hf.co https://cas-bridge.xethub.hf.co https://raw.githubusercontent.com"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' data: blob: https://huggingface.co https://*.huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs-us-1.huggingface.co https://cdn-lfs.hf.co https://cdn-lfs-us-1.hf.co https://cdn-lfs-eu-1.hf.co https://cas-bridge.xethub.hf.co https://cas-server.xethub.hf.co https://cas-server.xethub-eu.hf.co https://transfer.xethub.hf.co https://transfer.xethub-eu.hf.co https://*.aws.cdn.hf.co https://*.gcp.cdn.hf.co"
   },
   "web_accessible_resources": [
     {

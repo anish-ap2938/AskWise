@@ -31,6 +31,15 @@ describe("parseRefineContent", () => {
     expect(result.reply).toBe("Shorter now.");
     expect(result.prompt).toBe("Be brief.");
   });
+
+  it("normalizes surviving prose typos in a model update", () => {
+    const result = parseRefineContent(
+      '{"reply":"Updated.","prompt":"Bild a wep app with `const wep = true`."}'
+    );
+    expect(result.prompt).toBe(
+      "Build a web app with `const wep = true`."
+    );
+  });
 });
 
 describe("buildRefineMessages", () => {

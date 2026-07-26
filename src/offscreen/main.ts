@@ -1,12 +1,43 @@
 import {
   CreateMLCEngine,
   hasModelInCache,
+  prebuiltAppConfig,
+  type AppConfig,
   type MLCEngine,
 } from "@mlc-ai/web-llm";
 import {
+  ASKWISE_FT_MODEL_ID,
+  askwiseFtConfigured,
+  askwiseFtModelUrl,
+} from "../shared/askwiseFtModel";
+import { PACKAGED_MODEL_LIBS } from "../shared/modelLibs";
+import {
   DEFAULT_ONDEVICE_MODEL,
+  ONDEVICE_MAX_TOKENS,
+  ONDEVICE_TEMPERATURE,
   type OnDeviceModelId,
 } from "../shared/ondeviceModel";
+
+function buildAppConfig(): AppConfig {
+  const model_list = prebuiltAppConfig.model_list.map((entry) => {
+    const rel = PACKAGED_MODEL_LIBS[entry.model_id as OnDeviceModelId];
+    if (!rel) return entry;
+    return { ...entry, model_lib: chrome.runtime.getURL(rel) };
+  });
+
+  // Fine-tuned MLC weights from Hugging Face + packaged matching wasm.
+  if (askwiseFtConfigured()) {
+    const lib = PACKAGED_MODEL_LIBS[ASKWISE_FT_MODEL_ID];
+    model_list.push({
+      model: askwiseFtModelUrl(),
+      model_id: ASKWISE_FT_MODEL_ID,
+      model_lib: chrome.runtime.getURL(lib),
+      required_features: ["shader-f16"],
+    });
+  }
+
+  return { ...prebuiltAppConfig, model_list };
+}
 
 type OffscreenRequest =
   | { type: "ONDEVICE_ENSURE"; model: OnDeviceModelId; requestId: string }
@@ -44,6 +75,7 @@ async function ensureEngine(
   }
 
   loading = CreateMLCEngine(model, {
+    appConfig: buildAppConfig(),
     initProgressCallback: (report) => {
       chrome.runtime.sendMessage({
         type: "ONDEVICE_PROGRESS",
@@ -125,8 +157,8 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
             { role: "system", content: req.system },
             { role: "user", content: req.user },
           ],
-          temperature: 0.3,
-          max_tokens: 700,
+          temperature: ONDEVICE_TEMPERATURE,
+          max_tokens: ONDEVICE_MAX_TOKENS,
           stream: req.stream,
           // Encourage JSON-only replies from small instruct models.
           response_format: { type: "json_object" },
