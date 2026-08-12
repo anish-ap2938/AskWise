@@ -5,10 +5,11 @@ import { getStorage, updateStorage } from "./storage";
 import { runOnDeviceRewrite } from "./llm/ondeviceRewrite";
 import {
   callOnDeviceRaw,
-  ensureOnDeviceModel,
   getOnDeviceProgress,
   OnDeviceLlmError,
+  startOnDeviceEnsure,
 } from "./llm/ondevice";
+import { humanizeOnDeviceError } from "../shared/ondeviceProgress";
 import { buildRefineMessages, parseRefineContent } from "./llm/refinePrompt";
 import type { RefineChatMessage } from "./llm/refinePrompt";
 
@@ -65,7 +66,7 @@ export function setupRouter(): void {
             },
           }));
         }
-        const progress = await ensureOnDeviceModel(model);
+        const progress = await startOnDeviceEnsure(model);
         sendResponse({ kind: "ONDEVICE_STATUS", payload: progress });
       })();
       return true;
@@ -113,10 +114,11 @@ export function setupRouter(): void {
           payload: {
             provider: "ondevice",
             status: 0,
-            message:
+            message: humanizeOnDeviceError(
               err instanceof Error
                 ? err.message
-                : "The on-device rewrite failed. Try again after the model is ready.",
+                : "The on-device rewrite failed. Try again after the model is ready."
+            ),
           },
         });
       }
@@ -176,10 +178,11 @@ async function handleImprove(payload: {
       payload: {
         provider: "ondevice",
         status: 0,
-        message:
+        message: humanizeOnDeviceError(
           err instanceof Error
             ? err.message
-            : "The on-device rewrite failed. Try again after the model is ready.",
+            : "The on-device rewrite failed. Try again after the model is ready."
+        ),
       },
     };
   }
@@ -216,7 +219,7 @@ async function handleRefine(payload: {
         provider: "ondevice",
         status: 0,
         message:
-          message +
+          humanizeOnDeviceError(message) +
           " — wait for the on-device model to finish downloading, then try again.",
       },
     };

@@ -3,9 +3,15 @@ import { improveTier1 } from "../shared/improve";
 import { getRecipe } from "../shared/recipes";
 import type { ScoreResult } from "../shared/types";
 import {
+  DEFAULT_ONDEVICE_PROGRESS,
   ONDEVICE_MODELS,
   type OnDeviceProgress,
 } from "../shared/ondeviceModel";
+import {
+  humanizeOnDeviceError,
+  ONDEVICE_PROGRESS_KEY,
+} from "../shared/ondeviceProgress";
+import { connectKeepAlivePort, sendToBackground } from "../shared/runtimeMessage";
 import { DownloadIcon, ExternalIcon, ProgressBar, StatusPill, type StatusTone } from "../options/ui";
 
 const DEMO_PROMPT = "i want to build and app for fitness";
@@ -85,12 +91,20 @@ export function Onboarding() {
   const [ondevice, setOndevice] = useState<OnDeviceProgress | null>(null);
 
   useEffect(() => {
+    const disconnect = connectKeepAlivePort();
     const refresh = () => {
-      chrome.runtime.sendMessage({ kind: "GET_ONDEVICE_STATUS" }, (response) => {
-        if (response?.kind === "ONDEVICE_STATUS") {
-          setOndevice(response.payload as OnDeviceProgress);
-        }
-      });
+      void sendToBackground<{ kind?: string; payload?: OnDeviceProgress }>(
+        { kind: "GET_ONDEVICE_STATUS" },
+        { retries: 2, retryDelayMs: 200 }
+      )
+        .then((response) => {
+          if (response?.kind === "ONDEVICE_STATUS" && response.payload) {
+            setOndevice(response.payload);
+          }
+        })
+        .catch(() => {
+          // Storage events still drive the UI if the worker is waking up.
+        });
     };
     refresh();
     const id = window.setInterval(refresh, 1200);
@@ -98,12 +112,13 @@ export function Onboarding() {
       changes: Record<string, chrome.storage.StorageChange>,
       area: string
     ) => {
-      if (area === "local" && changes.askwise_ondevice_progress) {
-        setOndevice(changes.askwise_ondevice_progress.newValue as OnDeviceProgress);
+      if (area === "local" && changes[ONDEVICE_PROGRESS_KEY]) {
+        setOndevice(changes[ONDEVICE_PROGRESS_KEY].newValue as OnDeviceProgress);
       }
     };
     chrome.storage.onChanged.addListener(onStorage);
     return () => {
+      disconnect();
       window.clearInterval(id);
       chrome.storage.onChanged.removeListener(onStorage);
     };
@@ -300,13 +315,26 @@ export function Onboarding() {
             <button
               type="button"
               className="btn btn-primary flex-none"
-              onClick={() =>
-                chrome.runtime.sendMessage({ kind: "ENSURE_ONDEVICE" }, (response) => {
-                  if (response?.kind === "ONDEVICE_STATUS") {
-                    setOndevice(response.payload as OnDeviceProgress);
-                  }
+              onClick={() => {
+                void sendToBackground<{ kind?: string; payload?: OnDeviceProgress }>({
+                  kind: "ENSURE_ONDEVICE",
                 })
-              }
+                  .then((response) => {
+                    if (response?.kind === "ONDEVICE_STATUS" && response.payload) {
+                      setOndevice(response.payload);
+                    }
+                  })
+                  .catch((err: unknown) => {
+                    const message = err instanceof Error ? err.message : String(err);
+                    setOndevice((prev) => ({
+                      ...(prev ?? DEFAULT_ONDEVICE_PROGRESS),
+                      status: "error",
+                      text: "Download stopped",
+                      error: humanizeOnDeviceError(message),
+                      updatedAt: Date.now(),
+                    }));
+                  });
+              }}
             >
               <DownloadIcon />
               {status === "error" ? "Try again" : "Download now"}
@@ -328,7 +356,7 @@ export function Onboarding() {
 
         {status === "error" && ondevice?.error && (
           <p className="mt-4 rounded-md bg-critical-soft px-3 py-2 text-xs text-critical">
-            {ondevice.error}
+            {humanizeOnDeviceError(ondevice.error)}
           </p>
         )}
       </section>

@@ -104,5 +104,8 @@ export const ONDEVICE_CONNECT_ORIGINS = [
   "https://transfer.xethub.hf.co",
   "https://transfer.xethub-eu.hf.co",
   "https://*.aws.cdn.hf.co",
+  "https://us.aws.cdn.hf.co",
+  "https://eu.aws.cdn.hf.co",
+  "https://*.cdn.hf.co",
   "https://*.gcp.cdn.hf.co",
 ] as const;

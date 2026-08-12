@@ -23,6 +23,8 @@ export function askwiseFtConfigured(): boolean {
   return !ASKWISE_FT_HF_REPO.startsWith("YOUR_HF_USER/");
 }
 
+/** Hugging Face resolve URL (trailing slash required so WebLLM joins artifact names). */
 export function askwiseFtModelUrl(): string {
-  return `https://huggingface.co/${ASKWISE_FT_HF_REPO}/resolve/main/`;
+  const repo = ASKWISE_FT_HF_REPO.replace(/^\/+|\/+$/g, "");
+  return `https://huggingface.co/${repo}/resolve/main/`;
 }

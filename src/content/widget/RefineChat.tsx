@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { humanizeOnDeviceError } from "../../shared/ondeviceProgress";
 import { SendIcon } from "./Icons";
 
 export interface RefineMessage {
@@ -63,7 +64,11 @@ export function RefineChat({ currentPrompt, onPromptUpdate }: RefineChatProps) {
       (response) => {
         setBusy(false);
         if (chrome.runtime.lastError) {
-          setError(chrome.runtime.lastError.message ?? "Refine failed.");
+          setError(
+            humanizeOnDeviceError(
+              chrome.runtime.lastError.message ?? "Refine failed."
+            )
+          );
           return;
         }
         if (response?.kind === "LLM_ERROR") {

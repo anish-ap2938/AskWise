@@ -22,6 +22,7 @@ describe("AskWise fine-tune model wiring", () => {
     } else {
       expect(askwiseFtConfigured()).toBe(true);
       expect(askwiseFtModelUrl()).toContain("huggingface.co");
+      expect(askwiseFtModelUrl()).toMatch(/\/resolve\/main\/$/);
       expect(ONDEVICE_MODELS[0]?.id).toBe(ASKWISE_FT_MODEL_ID);
     }
   });

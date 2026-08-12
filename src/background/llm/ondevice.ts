@@ -1,14 +1,31 @@
 import type { StorageSchema } from "../../shared/types";
 import {
   DEFAULT_ONDEVICE_MODEL,
-  DEFAULT_ONDEVICE_PROGRESS,
   type OnDeviceModelId,
   type OnDeviceProgress,
 } from "../../shared/ondeviceModel";
+import {
+  getOnDeviceProgress,
+  humanizeOnDeviceError,
+  isDownloadStale,
+  isReceivingEndError,
+  setOnDeviceProgress,
+} from "../../shared/ondeviceProgress";
+import {
+  startDownloadKeepAlive,
+  stopDownloadKeepAlive,
+} from "../keepAlive";
 import { parseJsonContent, tryParsePartial, type LlmRewriteResult } from "./parseLlmJson";
-import { ensureOffscreenDocument, sendToOffscreen, supportsOffscreen } from "./offscreen";
+import {
+  ensureOffscreenReady,
+  sendToOffscreen,
+  supportsOffscreen,
+} from "./offscreen";
 
-const PROGRESS_KEY = "askwise_ondevice_progress";
+export {
+  getOnDeviceProgress,
+  setOnDeviceProgress,
+} from "../../shared/ondeviceProgress";
 
 export class OnDeviceLlmError extends Error {
   constructor(
@@ -20,25 +37,11 @@ export class OnDeviceLlmError extends Error {
   }
 }
 
-export async function getOnDeviceProgress(): Promise<OnDeviceProgress> {
-  const result = await chrome.storage.local.get(PROGRESS_KEY);
-  return (result[PROGRESS_KEY] as OnDeviceProgress | undefined) ?? {
-    ...DEFAULT_ONDEVICE_PROGRESS,
-  };
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function setOnDeviceProgress(
-  patch: Partial<OnDeviceProgress>
-): Promise<OnDeviceProgress> {
-  const current = await getOnDeviceProgress();
-  const next: OnDeviceProgress = {
-    ...current,
-    ...patch,
-    updatedAt: Date.now(),
-  };
-  await chrome.storage.local.set({ [PROGRESS_KEY]: next });
-  return next;
-}
+let ensureInFlight: Promise<OnDeviceProgress> | null = null;
 
 export function setupOnDeviceProgressListener(): void {
   chrome.runtime.onMessage.addListener((message) => {
@@ -53,8 +56,51 @@ export function setupOnDeviceProgressListener(): void {
   });
 }
 
+/** Kick off a download and return immediately so the UI message port can close. */
+export async function startOnDeviceEnsure(
+  model: OnDeviceModelId = DEFAULT_ONDEVICE_MODEL
+): Promise<OnDeviceProgress> {
+  if (!supportsOffscreen()) {
+    return setOnDeviceProgress({
+      status: "unsupported",
+      model,
+      progress: 0,
+      text: "On-device AI needs Chrome 113+ with WebGPU.",
+      error: "unsupported",
+    });
+  }
+
+  const current = await getOnDeviceProgress();
+  if (current.status === "ready" && current.model === model) {
+    void ensureOnDeviceModel(model);
+    return current;
+  }
+
+  const next = await setOnDeviceProgress({
+    status: "downloading",
+    model,
+    progress: current.model === model ? current.progress : 0,
+    text: current.model === model && current.text
+      ? current.text
+      : "Starting model download…",
+    error: undefined,
+  });
+  void ensureOnDeviceModel(model);
+  return next;
+}
+
 export async function ensureOnDeviceModel(
   model: OnDeviceModelId = DEFAULT_ONDEVICE_MODEL
+): Promise<OnDeviceProgress> {
+  if (ensureInFlight) return ensureInFlight;
+  ensureInFlight = runEnsureOnDeviceModel(model).finally(() => {
+    ensureInFlight = null;
+  });
+  return ensureInFlight;
+}
+
+async function runEnsureOnDeviceModel(
+  model: OnDeviceModelId
 ): Promise<OnDeviceProgress> {
   if (!supportsOffscreen()) {
     return setOnDeviceProgress({
@@ -69,13 +115,13 @@ export async function ensureOnDeviceModel(
   await setOnDeviceProgress({
     status: "downloading",
     model,
-    progress: 0,
     text: "Starting model download…",
     error: undefined,
   });
+  await startDownloadKeepAlive();
 
   try {
-    await ensureOffscreenDocument();
+    await ensureOffscreenReady();
     const requestId = `ensure-${Date.now()}`;
     const response = await sendToOffscreen<{ ok: boolean; error?: string }>({
       type: "ONDEVICE_ENSURE",
@@ -85,22 +131,68 @@ export async function ensureOnDeviceModel(
     if (!response?.ok) {
       throw new Error(response?.error ?? "Failed to load on-device model");
     }
-    return setOnDeviceProgress({
+    const ready = await setOnDeviceProgress({
       status: "ready",
       model,
       progress: 1,
       text: "Model ready",
       error: undefined,
     });
+    await stopDownloadKeepAlive();
+    return ready;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return setOnDeviceProgress({
+    if (isReceivingEndError(message)) {
+      const recovered = await waitForOffscreenProgress(model);
+      if (recovered.status === "ready" || recovered.status === "error") {
+        await stopDownloadKeepAlive();
+        return recovered;
+      }
+    }
+    const failed = await setOnDeviceProgress({
       status: "error",
       model,
-      progress: 0,
-      text: message,
-      error: message,
+      text: "Download stopped",
+      error: humanizeOnDeviceError(message),
     });
+    await stopDownloadKeepAlive();
+    return failed;
+  }
+}
+
+async function waitForOffscreenProgress(
+  model: OnDeviceModelId,
+  timeoutMs = 120_000
+): Promise<OnDeviceProgress> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const progress = await getOnDeviceProgress();
+    if (progress.model === model && progress.status === "ready") return progress;
+    if (progress.model === model && progress.status === "error") return progress;
+    if (progress.status === "downloading" && isDownloadStale(progress)) {
+      break;
+    }
+    await delay(1000);
+  }
+  return getOnDeviceProgress();
+}
+
+/** Called when the SW wakes (alarm or install) mid-download. */
+export async function resumeOnDeviceIfNeeded(): Promise<void> {
+  const progress = await getOnDeviceProgress();
+  if (progress.status !== "downloading") {
+    await stopDownloadKeepAlive();
+    return;
+  }
+  await startDownloadKeepAlive();
+  if (isDownloadStale(progress)) {
+    void ensureOnDeviceModel(progress.model);
+    return;
+  }
+  try {
+    await ensureOffscreenReady();
+  } catch {
+    void ensureOnDeviceModel(progress.model);
   }
 }
 
@@ -136,7 +228,6 @@ export async function callOnDeviceRaw(
   }
 
   try {
-    // Ensure weights are loaded before the first refine/Advanced call.
     await ensureOnDeviceModel(model);
 
     const response = await sendToOffscreen<{
@@ -153,7 +244,10 @@ export async function callOnDeviceRaw(
     });
 
     if (!response?.ok || !response.content) {
-      throw new OnDeviceLlmError(0, response?.error ?? "On-device chat failed");
+      throw new OnDeviceLlmError(
+        0,
+        humanizeOnDeviceError(response?.error ?? "On-device chat failed")
+      );
     }
 
     await setOnDeviceProgress({
@@ -168,7 +262,7 @@ export async function callOnDeviceRaw(
     if (err instanceof OnDeviceLlmError) throw err;
     throw new OnDeviceLlmError(
       0,
-      err instanceof Error ? err.message : String(err)
+      humanizeOnDeviceError(err instanceof Error ? err.message : String(err))
     );
   } finally {
     if (onChunk) {
@@ -205,15 +299,19 @@ export async function probeOnDeviceCache(
     return { cached: false, webgpu: false };
   }
   try {
+    await ensureOffscreenReady();
     const response = await sendToOffscreen<{
       ok: boolean;
       cached?: boolean;
       webgpu?: boolean;
-    }>({
-      type: "ONDEVICE_HAS_CACHE",
-      model,
-      requestId: `cache-${Date.now()}`,
-    });
+    }>(
+      {
+        type: "ONDEVICE_HAS_CACHE",
+        model,
+        requestId: `cache-${Date.now()}`,
+      },
+      8000
+    );
     return {
       cached: !!response?.cached,
       webgpu: !!response?.webgpu,

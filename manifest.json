@@ -3,7 +3,7 @@
   "name": "AskWise",
   "version": "0.2.6",
   "description": "Turn rough AI prompts into structured, model-ready prompts — locally and privately.",
-  "permissions": ["storage", "offscreen"],
+  "permissions": ["storage", "offscreen", "alarms"],
   "host_permissions": [
     "https://chatgpt.com/*",
     "https://*.chatgpt.com/*",
@@ -28,6 +28,9 @@
     "https://transfer.xethub.hf.co/*",
     "https://transfer.xethub-eu.hf.co/*",
     "https://*.aws.cdn.hf.co/*",
+    "https://us.aws.cdn.hf.co/*",
+    "https://eu.aws.cdn.hf.co/*",
+    "https://*.cdn.hf.co/*",
     "https://*.gcp.cdn.hf.co/*"
   ],
   "background": {
@@ -65,7 +68,7 @@
     "128": "icons/128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' data: blob: https://huggingface.co https://*.huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs-us-1.huggingface.co https://cdn-lfs.hf.co https://cdn-lfs-us-1.hf.co https://cdn-lfs-eu-1.hf.co https://cas-bridge.xethub.hf.co https://cas-server.xethub.hf.co https://cas-server.xethub-eu.hf.co https://transfer.xethub.hf.co https://transfer.xethub-eu.hf.co https://*.aws.cdn.hf.co https://*.gcp.cdn.hf.co"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' data: blob: https://huggingface.co https://*.huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs-us-1.huggingface.co https://cdn-lfs.hf.co https://cdn-lfs-us-1.hf.co https://cdn-lfs-eu-1.hf.co https://cas-bridge.xethub.hf.co https://cas-server.xethub.hf.co https://cas-server.xethub-eu.hf.co https://transfer.xethub.hf.co https://transfer.xethub-eu.hf.co https://*.aws.cdn.hf.co https://us.aws.cdn.hf.co https://eu.aws.cdn.hf.co https://*.cdn.hf.co https://*.gcp.cdn.hf.co"
   },
   "web_accessible_resources": [
     {

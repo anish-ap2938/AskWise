@@ -3,14 +3,26 @@ import { getStorage } from "./storage";
 import {
   ensureOnDeviceModel,
   probeOnDeviceCache,
+  resumeOnDeviceIfNeeded,
   setOnDeviceProgress,
   setupOnDeviceProgressListener,
 } from "./llm/ondevice";
 import { supportsOffscreen } from "./llm/offscreen";
+import {
+  ONDEVICE_KEEPALIVE_ALARM,
+  setupKeepAlivePorts,
+} from "./keepAlive";
+import { getOnDeviceProgress } from "../shared/ondeviceProgress";
 
 console.log("[AskWise] service worker started");
 
 setupOnDeviceProgressListener();
+setupKeepAlivePorts();
+
+chrome.alarms?.onAlarm.addListener((alarm) => {
+  if (alarm.name !== ONDEVICE_KEEPALIVE_ALARM) return;
+  void resumeOnDeviceIfNeeded();
+});
 
 chrome.runtime.onInstalled.addListener((details) => {
   console.log("[AskWise] extension installed");
@@ -26,10 +38,18 @@ chrome.runtime.onInstalled.addListener((details) => {
   });
 });
 
-// On SW wake, reflect cache state without forcing a GPU reload.
-void getStorage().then(async (storage) => {
+// On SW wake, resume an in-flight download or reflect cache state.
+void (async () => {
+  const progress = await getOnDeviceProgress();
+  if (progress.status === "downloading") {
+    await resumeOnDeviceIfNeeded();
+    return;
+  }
+  const storage = await getStorage();
   if (!storage.providers.ondevice.enabled || !supportsOffscreen()) return;
-  const { cached, webgpu } = await probeOnDeviceCache(storage.providers.ondevice.model);
+  const { cached, webgpu } = await probeOnDeviceCache(
+    storage.providers.ondevice.model
+  );
   if (!webgpu) return;
   if (cached) {
     await setOnDeviceProgress({
@@ -40,6 +60,6 @@ void getStorage().then(async (storage) => {
       error: undefined,
     });
   }
-});
+})();
 
 setupRouter();

@@ -16,6 +16,7 @@ if (typeof globalThis.chrome === "undefined") {
       connect: () => ({
         postMessage: () => {},
         onMessage: { addListener: () => {} },
+        onDisconnect: { addListener: () => {} },
         disconnect: () => {},
       }),
       lastError: null,

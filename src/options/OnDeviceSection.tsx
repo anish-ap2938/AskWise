@@ -5,6 +5,11 @@ import {
   type OnDeviceModelId,
   type OnDeviceProgress,
 } from "../shared/ondeviceModel";
+import {
+  humanizeOnDeviceError,
+  ONDEVICE_PROGRESS_KEY,
+} from "../shared/ondeviceProgress";
+import { connectKeepAlivePort, sendToBackground } from "../shared/runtimeMessage";
 import { DownloadIcon, ProgressBar, Section, StatusPill, type StatusTone } from "./ui";
 
 interface Props {
@@ -50,43 +55,61 @@ export function OnDeviceSection({ storage, onPersist }: Props) {
   const [progress, setProgress] = useState<OnDeviceProgress | null>(null);
 
   const refresh = useCallback(() => {
-    chrome.runtime.sendMessage({ kind: "GET_ONDEVICE_STATUS" }, (response) => {
-      if (response?.kind === "ONDEVICE_STATUS") {
-        setProgress(response.payload as OnDeviceProgress);
-      }
-    });
+    void sendToBackground<{ kind?: string; payload?: OnDeviceProgress }>(
+      { kind: "GET_ONDEVICE_STATUS" },
+      { retries: 2, retryDelayMs: 200 }
+    )
+      .then((response) => {
+        if (response?.kind === "ONDEVICE_STATUS" && response.payload) {
+          setProgress(response.payload);
+        }
+      })
+      .catch(() => {
+        // Storage events still drive the UI if the worker is waking up.
+      });
   }, []);
 
   useEffect(() => {
+    const disconnect = connectKeepAlivePort();
     refresh();
     const id = window.setInterval(refresh, 1500);
     const onStorage = (
       changes: Record<string, chrome.storage.StorageChange>,
       area: string
     ) => {
-      if (area === "local" && changes.askwise_ondevice_progress) {
-        setProgress(changes.askwise_ondevice_progress.newValue as OnDeviceProgress);
+      if (area === "local" && changes[ONDEVICE_PROGRESS_KEY]) {
+        setProgress(changes[ONDEVICE_PROGRESS_KEY].newValue as OnDeviceProgress);
       }
     };
     chrome.storage.onChanged.addListener(onStorage);
     return () => {
+      disconnect();
       window.clearInterval(id);
       chrome.storage.onChanged.removeListener(onStorage);
     };
   }, [refresh]);
 
   const download = () => {
-    chrome.runtime.sendMessage(
-      {
-        kind: "ENSURE_ONDEVICE",
-        payload: { model: storage.providers.ondevice.model },
-      },
-      (response) => {
-        if (response?.kind === "ONDEVICE_STATUS") {
-          setProgress(response.payload as OnDeviceProgress);
+    void sendToBackground<{ kind?: string; payload?: OnDeviceProgress }>({
+      kind: "ENSURE_ONDEVICE",
+      payload: { model: storage.providers.ondevice.model },
+    })
+      .then((response) => {
+        if (response?.kind === "ONDEVICE_STATUS" && response.payload) {
+          setProgress(response.payload);
         }
-      }
-    );
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setProgress((prev) => ({
+          status: "error",
+          model: storage.providers.ondevice.model,
+          progress: prev?.progress ?? 0,
+          text: "Download stopped",
+          error: humanizeOnDeviceError(message),
+          updatedAt: Date.now(),
+        }));
+      });
   };
 
   const status = progress?.status ?? "idle";
@@ -168,7 +191,7 @@ export function OnDeviceSection({ storage, onPersist }: Props) {
 
           {progress?.error && (
             <p className="rounded-md bg-critical-soft px-3 py-2 text-xs text-critical">
-              {progress.error}
+              {humanizeOnDeviceError(progress.error)}
             </p>
           )}
           {downloading && progress?.text && (

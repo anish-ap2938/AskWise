@@ -11,12 +11,18 @@ import {
   askwiseFtModelUrl,
 } from "../shared/askwiseFtModel";
 import { PACKAGED_MODEL_LIBS } from "../shared/modelLibs";
+import { assertMlcModelJson } from "../shared/mlcArtifacts";
 import {
   DEFAULT_ONDEVICE_MODEL,
   ONDEVICE_MAX_TOKENS,
   ONDEVICE_TEMPERATURE,
   type OnDeviceModelId,
 } from "../shared/ondeviceModel";
+import {
+  humanizeOnDeviceError,
+  setOnDeviceProgress,
+} from "../shared/ondeviceProgress";
+import { connectKeepAlivePort } from "../shared/runtimeMessage";
 
 function buildAppConfig(): AppConfig {
   const model_list = prebuiltAppConfig.model_list.map((entry) => {
@@ -33,10 +39,20 @@ function buildAppConfig(): AppConfig {
       model_id: ASKWISE_FT_MODEL_ID,
       model_lib: chrome.runtime.getURL(lib),
       required_features: ["shader-f16"],
+      overrides: {
+        context_window_size: 4096,
+      },
     });
   }
 
-  return { ...prebuiltAppConfig, model_list };
+  return {
+    ...prebuiltAppConfig,
+    model_list,
+    // Cache API + HF's /api/resolve-cache redirects trip CORS from extension
+    // pages and can cache HTML error pages as "JSON". IndexedDB uses fetch(),
+    // which host_permissions allow.
+    cacheBackend: "indexeddb",
+  };
 }
 
 type OffscreenRequest =
@@ -50,15 +66,58 @@ type OffscreenRequest =
       stream: boolean;
     }
   | { type: "ONDEVICE_STATUS"; model: OnDeviceModelId; requestId: string }
-  | { type: "ONDEVICE_HAS_CACHE"; model: OnDeviceModelId; requestId: string };
+  | { type: "ONDEVICE_HAS_CACHE"; model: OnDeviceModelId; requestId: string }
+  | { type: "ONDEVICE_PING"; requestId: string };
 
 let engine: MLCEngine | null = null;
 let loadedModel: string | null = null;
 let loading: Promise<MLCEngine> | null = null;
+let heartbeat: number | null = null;
 
 function supportsWebGpu(): boolean {
   const nav = navigator as Navigator & { gpu?: unknown };
   return typeof navigator !== "undefined" && !!nav.gpu;
+}
+
+function ignoreLastError(): void {
+  void chrome.runtime.lastError;
+}
+
+function postProgress(payload: {
+  requestId: string;
+  progress: number;
+  text: string;
+  model: OnDeviceModelId;
+  ready?: boolean;
+}): void {
+  void setOnDeviceProgress({
+    status: payload.ready ? "ready" : "downloading",
+    model: payload.model,
+    progress: payload.progress,
+    text: payload.text,
+    error: undefined,
+  });
+  chrome.runtime.sendMessage(
+    {
+      type: "ONDEVICE_PROGRESS",
+      ...payload,
+    },
+    ignoreLastError
+  );
+}
+
+function startHeartbeat(model: OnDeviceModelId): void {
+  stopHeartbeat();
+  heartbeat = window.setInterval(() => {
+    void setOnDeviceProgress({ model });
+  }, 5000);
+}
+
+function stopHeartbeat(): void {
+  if (heartbeat !== null) {
+    window.clearInterval(heartbeat);
+    heartbeat = null;
+  }
 }
 
 async function ensureEngine(
@@ -74,11 +133,24 @@ async function ensureEngine(
     );
   }
 
+  const appConfig = buildAppConfig();
+  const record = appConfig.model_list.find((item) => item.model_id === model);
+  if (record?.model) {
+    await assertMlcModelJson(record.model);
+  }
+
+  startHeartbeat(model);
+  postProgress({
+    requestId,
+    progress: 0,
+    text: "Starting model download…",
+    model,
+  });
+
   loading = CreateMLCEngine(model, {
-    appConfig: buildAppConfig(),
+    appConfig,
     initProgressCallback: (report) => {
-      chrome.runtime.sendMessage({
-        type: "ONDEVICE_PROGRESS",
+      postProgress({
         requestId,
         progress: report.progress,
         text: report.text,
@@ -90,8 +162,8 @@ async function ensureEngine(
       engine = created;
       loadedModel = model;
       loading = null;
-      chrome.runtime.sendMessage({
-        type: "ONDEVICE_PROGRESS",
+      stopHeartbeat();
+      postProgress({
         requestId,
         progress: 1,
         text: "Model ready",
@@ -104,10 +176,23 @@ async function ensureEngine(
       loading = null;
       engine = null;
       loadedModel = null;
+      stopHeartbeat();
       throw err;
     });
 
   return loading;
+}
+
+function reply(
+  sendResponse: (response: unknown) => void,
+  payload: unknown
+): void {
+  try {
+    sendResponse(payload);
+  } catch {
+    // Service worker may have been killed; progress is already in storage.
+  }
+  ignoreLastError();
 }
 
 chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
@@ -119,6 +204,7 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
       "ONDEVICE_CHAT",
       "ONDEVICE_STATUS",
       "ONDEVICE_HAS_CACHE",
+      "ONDEVICE_PING",
     ].includes(message.type)
   ) {
     return false;
@@ -126,16 +212,21 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
 
   const req = message as OffscreenRequest;
 
+  if (req.type === "ONDEVICE_PING") {
+    sendResponse({ ok: true, pong: true });
+    return false;
+  }
+
   void (async () => {
     try {
       if (req.type === "ONDEVICE_HAS_CACHE") {
-        const cached = await hasModelInCache(req.model);
-        sendResponse({ ok: true, cached, webgpu: supportsWebGpu() });
+        const cached = await hasModelInCache(req.model, buildAppConfig());
+        reply(sendResponse, { ok: true, cached, webgpu: supportsWebGpu() });
         return;
       }
 
       if (req.type === "ONDEVICE_STATUS") {
-        sendResponse({
+        reply(sendResponse, {
           ok: true,
           ready: loadedModel === req.model && !!engine,
           model: loadedModel,
@@ -146,7 +237,7 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
 
       if (req.type === "ONDEVICE_ENSURE") {
         await ensureEngine(req.model, req.requestId);
-        sendResponse({ ok: true, ready: true });
+        reply(sendResponse, { ok: true, ready: true });
         return;
       }
 
@@ -160,7 +251,6 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           temperature: ONDEVICE_TEMPERATURE,
           max_tokens: ONDEVICE_MAX_TOKENS,
           stream: req.stream,
-          // Encourage JSON-only replies from small instruct models.
           response_format: { type: "json_object" },
         });
 
@@ -172,13 +262,16 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
             const piece = chunk.choices[0]?.delta?.content ?? "";
             if (!piece) continue;
             accumulated += piece;
-            chrome.runtime.sendMessage({
-              type: "ONDEVICE_CHAT_CHUNK",
-              requestId: req.requestId,
-              text: accumulated,
-            });
+            chrome.runtime.sendMessage(
+              {
+                type: "ONDEVICE_CHAT_CHUNK",
+                requestId: req.requestId,
+                text: accumulated,
+              },
+              ignoreLastError
+            );
           }
-          sendResponse({ ok: true, content: accumulated });
+          reply(sendResponse, { ok: true, content: accumulated });
           return;
         }
 
@@ -186,24 +279,31 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
           choices: Array<{ message?: { content?: string } }>;
         };
         const content = nonStream.choices[0]?.message?.content?.trim() ?? "";
-        sendResponse({ ok: true, content });
+        reply(sendResponse, { ok: true, content });
         return;
       }
 
-      sendResponse({ ok: false, error: "Unknown offscreen request" });
+      reply(sendResponse, { ok: false, error: "Unknown offscreen request" });
     } catch (err) {
-      sendResponse({
-        ok: false,
-        error: err instanceof Error ? err.message : String(err),
+      const error = humanizeOnDeviceError(
+        err instanceof Error ? err.message : String(err)
+      );
+      await setOnDeviceProgress({
+        status: "error",
+        text: "Download stopped",
+        error,
       });
+      reply(sendResponse, { ok: false, error });
     }
   })();
 
   return true;
 });
 
+connectKeepAlivePort();
+
 // Warm default model if already cached so Advanced feels instant.
-void hasModelInCache(DEFAULT_ONDEVICE_MODEL).then((cached) => {
+void hasModelInCache(DEFAULT_ONDEVICE_MODEL, buildAppConfig()).then((cached) => {
   if (cached && supportsWebGpu()) {
     void ensureEngine(DEFAULT_ONDEVICE_MODEL, "warmup").catch(() => {
       // Ignore warmup failures; first real request will retry.
