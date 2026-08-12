@@ -74,8 +74,18 @@ export function isDownloadStale(
   );
 }
 
+/** Offscreen / tests may have `chrome` without `chrome.storage`. */
+function chromeLocalStorage(): chrome.storage.LocalStorageArea | undefined {
+  if (typeof chrome === "undefined") return undefined;
+  return chrome.storage?.local;
+}
+
 export async function getOnDeviceProgress(): Promise<OnDeviceProgress> {
-  const result = await chrome.storage.local.get(ONDEVICE_PROGRESS_KEY);
+  const area = chromeLocalStorage();
+  if (!area?.get) {
+    return { ...DEFAULT_ONDEVICE_PROGRESS };
+  }
+  const result = await area.get(ONDEVICE_PROGRESS_KEY);
   return (
     (result[ONDEVICE_PROGRESS_KEY] as OnDeviceProgress | undefined) ?? {
       ...DEFAULT_ONDEVICE_PROGRESS,
@@ -95,6 +105,9 @@ export async function setOnDeviceProgress(
   if (next.error) {
     next.error = humanizeOnDeviceError(next.error);
   }
-  await chrome.storage.local.set({ [ONDEVICE_PROGRESS_KEY]: next });
+  const area = chromeLocalStorage();
+  if (area?.set) {
+    await area.set({ [ONDEVICE_PROGRESS_KEY]: next });
+  }
   return next;
 }

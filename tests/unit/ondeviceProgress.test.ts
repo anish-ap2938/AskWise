@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  getOnDeviceProgress,
   humanizeOnDeviceError,
   isDownloadStale,
   isHtmlAsJsonError,
   isReceivingEndError,
   looksLikeHtmlDocument,
+  setOnDeviceProgress,
 } from "../../src/shared/ondeviceProgress";
 import type { OnDeviceProgress } from "../../src/shared/ondeviceModel";
 import { DEFAULT_ONDEVICE_MODEL } from "../../src/shared/ondeviceModel";
@@ -59,5 +61,41 @@ describe("on-device error copy", () => {
         Date.now()
       )
     ).toBe(false);
+  });
+});
+
+describe("on-device progress storage guard", () => {
+  const g = globalThis as { chrome?: typeof chrome };
+
+  async function withChrome<T>(
+    value: typeof chrome | undefined,
+    fn: () => Promise<T>
+  ): Promise<T> {
+    const prev = g.chrome;
+    g.chrome = value;
+    try {
+      return await fn();
+    } finally {
+      g.chrome = prev;
+    }
+  }
+
+  it("does not read .local when chrome.storage is missing", async () => {
+    await withChrome({ runtime: {} } as typeof chrome, async () => {
+      await expect(getOnDeviceProgress()).resolves.toMatchObject({
+        status: "idle",
+      });
+      await expect(
+        setOnDeviceProgress({ text: "heartbeat" })
+      ).resolves.toMatchObject({ text: "heartbeat" });
+    });
+  });
+
+  it("does not throw when chrome itself is undefined", async () => {
+    await withChrome(undefined, async () => {
+      await expect(getOnDeviceProgress()).resolves.toMatchObject({
+        status: "idle",
+      });
+    });
   });
 });

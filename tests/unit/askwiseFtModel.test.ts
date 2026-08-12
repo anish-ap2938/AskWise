@@ -13,6 +13,10 @@ describe("AskWise fine-tune model wiring", () => {
     expect(PACKAGED_MODEL_LIBS[ASKWISE_FT_MODEL_ID]).toMatch(/\.wasm$/);
   });
 
+  it("uses the HF repo last path segment as WebLLM model_id", () => {
+    expect(ASKWISE_FT_MODEL_ID).toBe(ASKWISE_FT_HF_REPO.split("/").pop());
+  });
+
   it("is not configured until the HF repo placeholder is replaced", () => {
     if (ASKWISE_FT_HF_REPO.startsWith("YOUR_HF_USER/")) {
       expect(askwiseFtConfigured()).toBe(false);

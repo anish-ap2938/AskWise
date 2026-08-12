@@ -20,5 +20,9 @@ export const PACKAGED_MODEL_LIBS: Record<OnDeviceModelId, string> = {
 };
 
 export function packagedModelLibUrl(model: OnDeviceModelId): string {
-  return chrome.runtime.getURL(PACKAGED_MODEL_LIBS[model]);
+  const rel = PACKAGED_MODEL_LIBS[model];
+  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL(rel);
+  }
+  return rel;
 }

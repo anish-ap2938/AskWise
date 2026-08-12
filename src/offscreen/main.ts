@@ -1,59 +1,17 @@
-import {
-  CreateMLCEngine,
-  hasModelInCache,
-  prebuiltAppConfig,
-  type AppConfig,
-  type MLCEngine,
-} from "@mlc-ai/web-llm";
-import {
-  ASKWISE_FT_MODEL_ID,
-  askwiseFtConfigured,
-  askwiseFtModelUrl,
-} from "../shared/askwiseFtModel";
-import { PACKAGED_MODEL_LIBS } from "../shared/modelLibs";
+import { CreateMLCEngine, hasModelInCache, type MLCEngine } from "@mlc-ai/web-llm";
 import { assertMlcModelJson } from "../shared/mlcArtifacts";
+import {
+  buildOnDeviceAppConfig,
+  findOnDeviceModelRecord,
+} from "../shared/mlcAppConfig";
 import {
   DEFAULT_ONDEVICE_MODEL,
   ONDEVICE_MAX_TOKENS,
   ONDEVICE_TEMPERATURE,
   type OnDeviceModelId,
 } from "../shared/ondeviceModel";
-import {
-  humanizeOnDeviceError,
-  setOnDeviceProgress,
-} from "../shared/ondeviceProgress";
+import { humanizeOnDeviceError } from "../shared/ondeviceProgress";
 import { connectKeepAlivePort } from "../shared/runtimeMessage";
-
-function buildAppConfig(): AppConfig {
-  const model_list = prebuiltAppConfig.model_list.map((entry) => {
-    const rel = PACKAGED_MODEL_LIBS[entry.model_id as OnDeviceModelId];
-    if (!rel) return entry;
-    return { ...entry, model_lib: chrome.runtime.getURL(rel) };
-  });
-
-  // Fine-tuned MLC weights from Hugging Face + packaged matching wasm.
-  if (askwiseFtConfigured()) {
-    const lib = PACKAGED_MODEL_LIBS[ASKWISE_FT_MODEL_ID];
-    model_list.push({
-      model: askwiseFtModelUrl(),
-      model_id: ASKWISE_FT_MODEL_ID,
-      model_lib: chrome.runtime.getURL(lib),
-      required_features: ["shader-f16"],
-      overrides: {
-        context_window_size: 4096,
-      },
-    });
-  }
-
-  return {
-    ...prebuiltAppConfig,
-    model_list,
-    // Cache API + HF's /api/resolve-cache redirects trip CORS from extension
-    // pages and can cache HTML error pages as "JSON". IndexedDB uses fetch(),
-    // which host_permissions allow.
-    cacheBackend: "indexeddb",
-  };
-}
 
 type OffscreenRequest =
   | { type: "ONDEVICE_ENSURE"; model: OnDeviceModelId; requestId: string }
@@ -85,18 +43,15 @@ function ignoreLastError(): void {
 
 function postProgress(payload: {
   requestId: string;
-  progress: number;
-  text: string;
+  progress?: number;
+  text?: string;
   model: OnDeviceModelId;
   ready?: boolean;
+  error?: string;
+  status?: "downloading" | "ready" | "error";
 }): void {
-  void setOnDeviceProgress({
-    status: payload.ready ? "ready" : "downloading",
-    model: payload.model,
-    progress: payload.progress,
-    text: payload.text,
-    error: undefined,
-  });
+  // Offscreen may not have chrome.storage; the service worker persists this.
+  if (typeof chrome === "undefined" || !chrome.runtime?.sendMessage) return;
   chrome.runtime.sendMessage(
     {
       type: "ONDEVICE_PROGRESS",
@@ -109,7 +64,7 @@ function postProgress(payload: {
 function startHeartbeat(model: OnDeviceModelId): void {
   stopHeartbeat();
   heartbeat = window.setInterval(() => {
-    void setOnDeviceProgress({ model });
+    postProgress({ requestId: "heartbeat", model, status: "downloading" });
   }, 5000);
 }
 
@@ -133,9 +88,14 @@ async function ensureEngine(
     );
   }
 
-  const appConfig = buildAppConfig();
-  const record = appConfig.model_list.find((item) => item.model_id === model);
-  if (record?.model) {
+  const appConfig = buildOnDeviceAppConfig();
+  const record = findOnDeviceModelRecord(model, appConfig);
+  if (!record) {
+    throw new Error(
+      `Cannot find model record in appConfig for ${model}. Please check if the model ID is correct and included in the model_list configuration.`
+    );
+  }
+  if (record.model) {
     await assertMlcModelJson(record.model);
   }
 
@@ -220,7 +180,7 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
   void (async () => {
     try {
       if (req.type === "ONDEVICE_HAS_CACHE") {
-        const cached = await hasModelInCache(req.model, buildAppConfig());
+        const cached = await hasModelInCache(req.model, buildOnDeviceAppConfig());
         reply(sendResponse, { ok: true, cached, webgpu: supportsWebGpu() });
         return;
       }
@@ -288,7 +248,11 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
       const error = humanizeOnDeviceError(
         err instanceof Error ? err.message : String(err)
       );
-      await setOnDeviceProgress({
+      const model =
+        "model" in req && req.model ? req.model : DEFAULT_ONDEVICE_MODEL;
+      postProgress({
+        requestId: "requestId" in req ? req.requestId : "error",
+        model,
         status: "error",
         text: "Download stopped",
         error,
@@ -303,7 +267,7 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
 connectKeepAlivePort();
 
 // Warm default model if already cached so Advanced feels instant.
-void hasModelInCache(DEFAULT_ONDEVICE_MODEL, buildAppConfig()).then((cached) => {
+void hasModelInCache(DEFAULT_ONDEVICE_MODEL, buildOnDeviceAppConfig()).then((cached) => {
   if (cached && supportsWebGpu()) {
     void ensureEngine(DEFAULT_ONDEVICE_MODEL, "warmup").catch(() => {
       // Ignore warmup failures; first real request will retry.

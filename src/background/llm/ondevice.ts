@@ -46,13 +46,23 @@ let ensureInFlight: Promise<OnDeviceProgress> | null = null;
 export function setupOnDeviceProgressListener(): void {
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type !== "ONDEVICE_PROGRESS") return;
-    void setOnDeviceProgress({
-      status: message.ready ? "ready" : "downloading",
+    const patch: Partial<OnDeviceProgress> = {
       model: message.model ?? DEFAULT_ONDEVICE_MODEL,
-      progress: typeof message.progress === "number" ? message.progress : 0,
-      text: message.text ?? "",
-      error: undefined,
-    });
+    };
+    if (typeof message.progress === "number") patch.progress = message.progress;
+    if (typeof message.text === "string") patch.text = message.text;
+    if (message.ready) {
+      patch.status = "ready";
+      patch.progress = 1;
+      patch.error = undefined;
+    } else if (message.error || message.status === "error") {
+      patch.status = "error";
+      patch.error = message.error;
+    } else {
+      patch.status = message.status === "ready" ? "ready" : "downloading";
+      patch.error = undefined;
+    }
+    void setOnDeviceProgress(patch);
   });
 }
 
