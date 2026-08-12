@@ -1,202 +1,544 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Privacy Policy — AskWise Chrome Extension</title>
+  <title>AskWise — rewrite your prompt before you send it</title>
+  <meta name="description" content="A free, open-source Chrome extension that turns a rough prompt into a clear, structured one — on ChatGPT, Claude, Gemini, Perplexity, DeepSeek and Copilot. Everything runs on your own computer." />
   <meta name="robots" content="index,follow" />
-  <meta name="description" content="Official privacy policy for the AskWise Chrome extension." />
-  <style>
-    body {
-      margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      background: #fff;
-      color: #111;
-      line-height: 1.65;
-    }
-    main { max-width: 740px; margin: 0 auto; padding: 40px 20px 96px; }
-    h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 0.4rem; }
-    h2 { font-size: 1.2rem; margin: 2rem 0 0.55rem; }
-    p, li { font-size: 1rem; }
-    .meta { color: #444; margin-bottom: 1.5rem; }
-    ul { padding-left: 1.25rem; }
-    li { margin: 0.4rem 0; }
-    code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.9em;
-      background: #f4f4f5;
-      padding: 0.05em 0.3em;
-    }
-    a { color: #0b57d0; }
-  </style>
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#121210" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>document.documentElement.className = "js";</script>
 </head>
 <body>
-  <main>
-    <h1>Privacy Policy for AskWise</h1>
-    <p class="meta">
-      <strong>Effective date:</strong> July 16, 2026<br />
-      <strong>Last updated:</strong> July 17, 2026<br />
-      <strong>Product:</strong> AskWise (Chrome extension)<br />
-      <strong>Developer:</strong> AskWise open-source project
-      (<a href="https://github.com/anish-ap2938/AskWise">github.com/anish-ap2938/AskWise</a>)
-    </p>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-    <p>
-      This Privacy Policy explains how the AskWise Chrome extension (“AskWise”, “we”, “us”)
-      handles information when you install and use the extension. This page is the official
-      privacy policy for AskWise.
-    </p>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="index.html" aria-label="AskWise, home">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <rect x="2.9" y="2.9" width="18.2" height="18.2" rx="5.4" stroke="currentColor" stroke-width="1.6" />
+          <path d="M8.4 9.2 11.4 12l-3 2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          <path class="mark-accent" d="M13.2 15.1h3.3" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+        AskWise
+      </a>
 
-    <h2>1. Overview</h2>
-    <p>
-      AskWise improves text that you type into AI chat composers (for example ChatGPT, Claude,
-      Gemini, Perplexity, DeepSeek, and Microsoft Copilot). AskWise does <strong>not</strong>
-      operate an AskWise backend server, does <strong>not</strong> create user accounts, and does
-      <strong>not</strong> use analytics or advertising trackers.
-    </p>
+      <nav class="site-nav" aria-label="Main">
+        <a class="nav-hide-sm" href="#examples">Examples</a>
+        <a class="nav-hide-sm" href="#how">How it works</a>
+        <a class="nav-hide-sm" href="#privacy">Privacy</a>
+        <a class="btn btn--primary btn--sm" href="#install">Install</a>
+      </nav>
+    </div>
+  </header>
 
-    <h2>2. Chrome Web Store Limited Use Compliance</h2>
-    <p>
-      AskWise’s use of information complies with the Chrome Web Store User Data Policy, including
-      the Limited Use requirements. AskWise uses user data only to provide or improve its
-      disclosed prompt-improvement functionality and does not use or transfer user data for
-      advertising, creditworthiness, or unrelated purposes.
-    </p>
-    <p>
-      The use of information received from Google APIs will adhere to the Chrome Web Store User
-      Data Policy, including the Limited Use requirements.
-    </p>
+  <main id="main">
 
-    <h2>3. Information the extension accesses</h2>
-    <p>When you use AskWise, the extension may access:</p>
-    <ul>
-      <li>
-        <strong>Website content in the active chat composer</strong> — the prompt text currently
-        in the input box on a supported AI website, only when you open or use AskWise.
-      </li>
-      <li>
-        <strong>User-selected file attachments</strong> — files you choose for context
-        (<code>.txt</code>, <code>.md</code>, <code>.pdf</code>), read with browser file APIs and
-        parsed on your device.
-      </li>
-      <li>
-        <strong>Local settings and saved templates</strong> — preferences you choose in the
-        extension options page, stored on your device.
-      </li>
-    </ul>
-    <p>
-      AskWise does not intentionally request or separately collect health, financial, or precise
-      location information. However, prompt text or files selected by a user may contain such
-      information. AskWise processes that content only to provide the features described in this
-      policy.
-    </p>
-    <p>
-      AskWise does not read your full browsing history and does not read chat history outside the
-      active composer when you use Improve.
-    </p>
+    <!-- ================================================================ -->
+    <!-- Hero                                                             -->
+    <!-- ================================================================ -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+        <p class="eyebrow"><span>Chrome extension · free · open source</span></p>
 
-    <h2>4. How information is used</h2>
-    <ul>
-      <li>To classify and rewrite your prompt into a clearer, structured prompt.</li>
-      <li>To show before/after scoring, diffs, and variants inside the extension UI.</li>
-      <li>To remember your settings, templates, and on-device model selection.</li>
-      <li>To run Advanced rewrites and Refine requests with the built-in on-device model.</li>
-    </ul>
-    <p>
-      We do not sell user data. We do not use user data for advertising. We do not use user data
-      to determine creditworthiness or for lending purposes.
-    </p>
+        <h1>Rewrite your prompt before you send it.</h1>
 
-    <h2>5. What leaves your device</h2>
-    <ul>
-      <li>
-        <strong>Default / Simple / Structured improve:</strong> processed entirely on your device.
-        No prompt text is sent to an AskWise server (there is none).
-      </li>
-      <li>
-        <strong>Advanced / Refine:</strong> prompt inference runs locally in the extension using
-        the built-in WebLLM model and WebGPU. Prompt content is not sent to an external AI provider.
-      </li>
-      <li>
-        <strong>On-device model data (once per model):</strong> AskWise may download model weights,
-        tokenizer files, model configuration files, and other non-executable model data from
-        Hugging Face or MLC content delivery networks into the browser’s Cache Storage. The
-        JavaScript and WebAssembly runtime used for inference is included in the installed
-        extension package. AskWise does not download or execute remotely hosted code. Your prompts
-        are <strong>not</strong> sent to those CDNs; inference runs locally via WebGPU.
-      </li>
-    </ul>
+        <p class="hero-lede">
+          AskWise puts a small <strong>Improve</strong> button next to the message box on
+          ChatGPT, Claude, Gemini, Perplexity, DeepSeek and Copilot. Type the rough version of
+          what you want. Press it. You get back a prompt that spells out the task, the shape of
+          the answer, and what would make it good — ready for you to read, edit and send.
+        </p>
 
-    <h2>6. Redaction and review</h2>
-    <p>
-      Before on-device inference, AskWise attempts to redact common sensitive-data patterns, such
-      as API tokens, email addresses, and payment-card numbers. Automated redaction may not identify
-      every sensitive value, so users should review generated prompts before using them.
-    </p>
+        <div class="actions">
+          <a class="btn btn--primary" href="#install">
+            Install AskWise
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+              <path d="M8 2v9m0 0L4.5 7.5M8 11l3.5-3.5M2.5 13.5h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+          <a class="btn btn--secondary" href="#examples">See a real rewrite</a>
+        </div>
 
-    <h2>7. Websites where AskWise operates</h2>
-    <p>
-      AskWise runs a content script on supported AI chat websites to display its interface and
-      access the active composer. AskWise does not independently transmit prompt text to those
-      websites. A website receives the resulting prompt only when the user submits it through that
-      website normally.
-    </p>
+        <ul class="hero-facts">
+          <li>No account</li>
+          <li>No telemetry</li>
+          <li>Nothing sent to a server</li>
+          <li>MIT licensed</li>
+        </ul>
+        </div>
 
-    <h2>8. Third-party services</h2>
-    <ul>
-      <li>
-        <strong>Hugging Face or MLC infrastructure</strong> receives model-download requests for
-        non-executable model data, but does not receive prompt content.
-      </li>
-    </ul>
-    <p>
-      AskWise does not send prompt content to an AskWise server or an external AI provider.
-      Supported AI chat websites receive the resulting prompt only when the user submits it there
-      normally.
-    </p>
+        <figure class="composer">
+          <div class="composer-frame">
+            <p class="composer-text">i need to email my prof about an extension|</p>
+            <div class="composer-bar">
+              <span class="pill">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                  <path d="M9 1.5 3.5 9h4l-.5 5.5L13 7H9z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+                </svg>
+                Improve
+              </span>
+              <span class="composer-caption">
+                <span class="nowrap">appears after 8 characters</span> ·
+                <span class="nowrap"><kbd>Alt</kbd> + <kbd>I</kbd></span>
+              </span>
+            </div>
+          </div>
+          <figcaption class="composer-caption">
+            How AskWise looks inside a chat composer.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
 
-    <h2>9. Storage and retention</h2>
-    <p>
-      Settings, templates, and on-device model download progress are stored in
-      <code>chrome.storage.local</code> on your device. Cached model weights may be
-      stored in the browser’s Cache Storage. This data remains until you clear it in the extension
-      options, clear site/extension data in Chrome, or uninstall AskWise. AskWise does not retain
-      copies of your prompts on any AskWise-operated server.
-    </p>
+    <!-- ================================================================ -->
+    <!-- Before / after                                                   -->
+    <!-- ================================================================ -->
+    <section class="section section--sunken" id="examples" aria-labelledby="examples-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow"><span>Before and after</span></p>
+          <h2 id="examples-title">This is the whole product, really.</h2>
+          <p>
+            Every pair below came out of the extension's own rewrite code, run directly against
+            the rough prompt on the left. Nothing here is a mock-up or a hand-written example.
+          </p>
+        </div>
 
-    <h2>10. Permissions</h2>
-    <ul>
-      <li><code>storage</code> — settings, templates, and model download progress</li>
-      <li><code>offscreen</code> — run the on-device WebGPU model in a hidden document</li>
-      <li>
-        Host permissions for supported chat sites — inject the composer widget and read the active
-        composer
-      </li>
-      <li>
-        Hugging Face / related CDNs — download non-executable on-device model data once into browser
-        cache
-      </li>
-    </ul>
+        <div class="tablist" role="tablist" aria-label="Rewrite examples">
+          <button class="tab" type="button" role="tab" id="tab-email" aria-controls="panel-email" aria-selected="true">Email to a professor</button>
+          <button class="tab" type="button" role="tab" id="tab-resume" aria-controls="panel-resume" aria-selected="false" tabindex="-1">Résumé bullet</button>
+          <button class="tab" type="button" role="tab" id="tab-bug" aria-controls="panel-bug" aria-selected="false" tabindex="-1">Python error</button>
+        </div>
 
-    <h2>11. Children’s privacy</h2>
-    <p>
-      AskWise is not directed to children under 13, and we do not knowingly collect personal
-      information from children.
-    </p>
+        <!-- Example 1 -->
+        <div class="tabpanel" id="panel-email" role="tabpanel" tabindex="0" aria-labelledby="tab-email">
+          <div class="pair">
+            <article class="panel">
+              <header class="panel-head">
+                <h3 class="panel-title">What you typed</h3>
+                <p class="score score--weak">23 / 100 · weak</p>
+              </header>
+              <p class="panel-body">write an email to my prof asking for an extension on my assignment</p>
+              <footer class="panel-foot">Missing: context, output format, tone, any sense of what "good" looks like.</footer>
+            </article>
 
-    <h2>12. Changes to this policy</h2>
-    <p>
-      We may update this Privacy Policy from time to time. The “Last updated” date at the top of
-      this page will change when we do. Continued use of AskWise after an update means you accept
-      the revised policy.
-    </p>
+            <div class="pair-arrow" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" focusable="false">
+                <path d="M10 3v14m0 0-5-5m5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
 
-    <h2>13. Contact</h2>
-    <p>
-      For privacy questions about AskWise, open an issue at
-      <a href="https://github.com/anish-ap2938/AskWise/issues">https://github.com/anish-ap2938/AskWise/issues</a>
-      or contact the publisher email listed on the Chrome Web Store listing.
-    </p>
+            <article class="panel panel--after">
+              <header class="panel-head">
+                <h3 class="panel-title">What AskWise gives you</h3>
+                <p class="score score--good">65 / 100 · okay</p>
+              </header>
+              <p class="panel-body">Write an email to my prof asking for an extension on my assignment
+
+<b>Before writing, confirm (or assume and state):</b> who's reading this, what I want them to do/feel after reading, and how formal it should be.
+
+<b>Style rules:</b>
+- Sound like a competent human, not a press release — no "I hope this finds you well", no "delve", no bullet-point-itis
+- Every sentence earns its place; cut the throat-clearing
+- Specific beats general ("shipped 3 features" beats "made great progress")
+
+<b>Deliver:</b> 2 versions — one direct, one warmer — and one line on when each works better.</p>
+              <footer class="panel-foot">Routed to the <strong>Writing</strong> template.</footer>
+            </article>
+          </div>
+        </div>
+
+        <!-- Example 2 -->
+        <div class="tabpanel" id="panel-resume" role="tabpanel" tabindex="0" aria-labelledby="tab-resume" hidden>
+          <div class="pair">
+            <article class="panel">
+              <header class="panel-head">
+                <h3 class="panel-title">What you typed</h3>
+                <p class="score score--weak">23 / 100 · weak</p>
+              </header>
+              <p class="panel-body">make my resume bullet better i managed social media accounts</p>
+              <footer class="panel-foot">No numbers, no target role, no idea what a better bullet would look like.</footer>
+            </article>
+
+            <div class="pair-arrow" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" focusable="false">
+                <path d="M10 3v14m0 0-5-5m5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+
+            <article class="panel panel--after">
+              <header class="panel-head">
+                <h3 class="panel-title">What AskWise gives you</h3>
+                <p class="score score--good">74 / 100 · strong</p>
+              </header>
+              <p class="panel-body">You are a resume coach who turns duty-descriptions into achievement statements. Make my resume bullet better I managed social media accounts
+
+<b>My current text:</b> <span class="slot">[paste your code / data / current text here]</span>
+
+<b>Method for each bullet:</b>
+1. Identify the buried achievement (what changed because I did this?).
+2. Rewrite as: strong verb → what I did → measurable outcome. If I gave no number, ask me ONE question to surface one (team size, time saved, revenue, volume) — never invent it.
+3. Keep each bullet under 2 lines and free of filler ("responsible for", "helped with").
+
+<b>Deliver 2 versions per bullet:</b> one concise, one with more technical depth — and say which suits a recruiter skim vs a hiring-manager read.</p>
+              <footer class="panel-foot">Routed to <strong>Resume / Job</strong>, then narrowed to the <strong>Resume Bullets</strong> sub-recipe.</footer>
+            </article>
+          </div>
+        </div>
+
+        <!-- Example 3 -->
+        <div class="tabpanel" id="panel-bug" role="tabpanel" tabindex="0" aria-labelledby="tab-bug" hidden>
+          <div class="pair">
+            <article class="panel">
+              <header class="panel-head">
+                <h3 class="panel-title">What you typed</h3>
+                <p class="score score--weak">12 / 100 · weak</p>
+              </header>
+              <p class="panel-body">my python script fails with IndexError</p>
+              <footer class="panel-foot">No code, no traceback — the kind of question that gets a guess for an answer.</footer>
+            </article>
+
+            <div class="pair-arrow" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" focusable="false">
+                <path d="M10 3v14m0 0-5-5m5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+
+            <article class="panel panel--after">
+              <header class="panel-head">
+                <h3 class="panel-title">What AskWise gives you</h3>
+                <p class="score score--good">58 / 100 · okay</p>
+              </header>
+              <p class="panel-body">Act as a senior engineer debugging with me. My python script fails with IndexError
+
+<b>Iron rule: no fixes without investigation.</b>
+1. Read the code and the exact error. State the root cause in one paragraph — the actual mechanism, not "it might be X".
+2. If you can't determine the root cause from what I gave you, tell me exactly what to check or log (max 3 things) instead of guessing.
+3. Give the minimal fix — smallest change that solves it. Preserve my approach unless it's fundamentally broken, and say so if it is.
+4. Explain in 2-3 lines why the fix works and how to confirm it.
+
+<span class="slot">[paste your code / data / current text here]</span></p>
+              <footer class="panel-foot">Routed to <strong>Coding Debug</strong>, then narrowed to the <strong>Error Debug</strong> sub-recipe.</footer>
+            </article>
+          </div>
+        </div>
+
+        <p class="demo-note">
+          The bracketed parts are blanks left for you on purpose. AskWise never invents a number,
+          a company or a traceback you didn't give it — it marks the gap and asks you to fill it.
+          The score is a fixed rubric, not an opinion: task clarity, specificity, context, output
+          format, constraints, audience, and success criteria.
+        </p>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- How it works                                                     -->
+    <!-- ================================================================ -->
+    <section class="section" id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow"><span>How it works</span></p>
+          <h2 id="how-title">Three seconds, start to finish.</h2>
+        </div>
+
+        <ol class="steps">
+          <li>
+            <h3>Type it badly.</h3>
+            <p>
+              Write the prompt the way it comes out of your head — typos, missing words, all of
+              it. Once you're eight characters in, the Improve pill appears beside the composer.
+              <kbd>Alt</kbd> + <kbd>I</kbd> does the same thing without the mouse.
+            </p>
+          </li>
+          <li>
+            <h3>AskWise reads the ask.</h3>
+            <p>
+              A set of rules running on your machine sorts the prompt — is this a debugging
+              problem, a cover letter, a comparison, a data question? — and picks a matching
+              template from more than seventy of them. There's no model call, so there's no wait.
+            </p>
+          </li>
+          <li>
+            <h3>You get a prompt and a reason.</h3>
+            <p>
+              The rewrite comes back with a before-and-after score and a diff showing exactly
+              what was added. Change anything you don't like, then send it. AskWise never sends
+              anything for you.
+            </p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- What's in it                                                     -->
+    <!-- ================================================================ -->
+    <section class="section section--sunken" id="inside" aria-labelledby="inside-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow"><span>What's in it</span></p>
+          <h2 id="inside-title">Specific tools for specific asks.</h2>
+          <p>
+            A prompt about a failing SQL query needs different treatment from a eulogy. AskWise
+            keeps separate templates rather than wrapping everything in the same preamble.
+          </p>
+        </div>
+
+        <dl class="spec">
+          <div>
+            <dt>A template per kind of ask</dt>
+            <dd>
+              Among them: writing, research, coding help, debugging, data analysis, résumés and
+              interviews, app builds, agent tasks, and short factual questions. Underneath those
+              sit the narrow cases — getting a résumé past an applicant tracking system,
+              negotiating salary, speeding up a slow query, writing cold outreach that doesn't
+              read like a template.
+            </dd>
+          </div>
+          <div>
+            <dt>A score you can argue with</dt>
+            <dd>
+              The 0–100 number is a deterministic rubric, not a model's judgement. If your prompt
+              loses points on context, AskWise names what's missing — "say who it's for or what
+              you're working on" — rather than telling you to try harder.
+            </dd>
+          </div>
+          <div>
+            <dt>Held to a test suite</dt>
+            <dd>
+              More than 290 hand-labelled prompts run through classification, rewriting and
+              scoring on every change, including deliberately awkward ones. A rewrite that stops
+              behaving fails the build.
+            </dd>
+          </div>
+          <div>
+            <dt>Six sites</dt>
+            <dd>
+              ChatGPT, Claude, Gemini, Perplexity, DeepSeek and Microsoft Copilot. Each one gets
+              its own adapter, because they all build their composer differently.
+            </dd>
+          </div>
+          <div>
+            <dt>An optional local model</dt>
+            <dd>
+              Instant rewrites are templates and rules — they work offline and download nothing.
+              If you want the Advanced rewrite or the Refine box, AskWise runs Qwen2.5 3B inside
+              your browser over WebGPU. Its weights (about 1.9 GB) download once and stay in the
+              browser cache. Your prompt still never leaves the machine.
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- Privacy                                                          -->
+    <!-- ================================================================ -->
+    <section class="section" id="privacy" aria-labelledby="privacy-title">
+      <div class="wrap">
+        <div class="split">
+          <div>
+            <p class="eyebrow"><span>Privacy</span></p>
+            <h2 id="privacy-title">Where your text goes</h2>
+          </div>
+
+          <div class="split-body">
+            <p>Nowhere. There is no AskWise server to send it to.</p>
+
+            <p>
+              The part that reads your prompt, picks a template, rewrites it and scores it is
+              ordinary JavaScript running inside the extension on your computer. The examples
+              further up this page were produced by running that same code straight from the
+              repository — no network involved, and the output is identical every time.
+            </p>
+
+            <p>
+              Advanced rewrites use a language model, and that model also runs on your machine.
+              The one thing AskWise ever downloads is the model's weight files, once, from
+              Hugging Face — and only if you switch Advanced on. Your prompt is not part of that
+              request.
+            </p>
+
+            <p>
+              No account, no sign-in, no analytics, no ads. AskWise doesn't read your browsing
+              history and doesn't read your conversation — only the text sitting in the composer,
+              and only when you ask it to. Before anything reaches the local model, it tries to
+              strip obvious secrets like API tokens, email addresses and card numbers.
+            </p>
+
+            <a class="inline-link" href="privacy/index.html">
+              Read the full privacy policy
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <path d="M3 8h10m0 0-4-4m4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- Install                                                          -->
+    <!-- ================================================================ -->
+    <section class="section section--sunken" id="install" aria-labelledby="install-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow"><span>Install</span></p>
+          <h2 id="install-title">Two minutes, from source.</h2>
+          <p>
+            The Chrome Web Store listing isn't live yet. Until it is, you build AskWise yourself.
+            You'll need Node and Chrome 113 or newer.
+          </p>
+        </div>
+
+        <pre class="code"><code><span class="prompt">$ </span>git clone https://github.com/anish-ap2938/AskWise
+<span class="prompt">$ </span>cd AskWise
+<span class="prompt">$ </span>npm install
+<span class="prompt">$ </span>npm run build</code></pre>
+
+        <ol class="install-steps">
+          <li>Open <code>chrome://extensions</code> and switch on <strong>Developer mode</strong>.</li>
+          <li>Choose <strong>Load unpacked</strong> and select the <code>dist</code> folder.</li>
+          <li>Open ChatGPT, type a few words, and look for the Improve pill under the box.</li>
+        </ol>
+
+        <div class="actions">
+          <a class="btn btn--primary" href="https://github.com/anish-ap2938/AskWise">
+            Get the source on GitHub
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+              <path d="M3 8h10m0 0-4-4m4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+          <a class="btn btn--secondary" href="https://github.com/anish-ap2938/AskWise/issues">Report a problem</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- Questions                                                        -->
+    <!-- ================================================================ -->
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow"><span>Questions</span></p>
+          <h2 id="faq-title">Fair things to ask</h2>
+        </div>
+
+        <div class="faq">
+          <details>
+            <summary>Does it answer the prompt for me?</summary>
+            <p>
+              No. AskWise only rewrites the prompt. The answer still comes from whichever AI
+              you're using, and you're the one who presses send.
+            </p>
+          </details>
+          <details>
+            <summary>Does it replace my own words?</summary>
+            <p>
+              It keeps your wording as the core of the rewrite and builds structure around it.
+              The result lands in the composer as editable text — delete half of it if you like.
+            </p>
+          </details>
+          <details>
+            <summary>Do I have to download the 1.9 GB model?</summary>
+            <p>
+              No. Instant rewrites are rules and templates: they work offline and download
+              nothing. The model is only for Advanced rewrites and Refine, and it stays off until
+              you turn it on.
+            </p>
+          </details>
+          <details>
+            <summary>Firefox? Safari?</summary>
+            <p>
+              Not yet. AskWise is a Chrome MV3 extension and leans on Chrome's extension APIs and
+              WebGPU. Other browsers would need real work, not a flag.
+            </p>
+          </details>
+          <details>
+            <summary>What's the catch on "free"?</summary>
+            <p>
+              There isn't one. There's no paid tier behind a trial, no rewrite quota, no card on
+              file. Since nothing runs on a server, nothing costs anything to run.
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- Closer                                                           -->
+    <!-- ================================================================ -->
+    <section class="section section--sunken" aria-labelledby="closer-title">
+      <div class="wrap closer">
+        <p class="eyebrow"><span>Free, and staying that way</span></p>
+        <h2 id="closer-title">Writing a clear prompt shouldn't cost money.</h2>
+        <p>
+          AskWise is MIT licensed and open from top to bottom. Read the rules that classify your
+          prompt, read the templates, disagree with the scoring, send a patch. It was built so
+          that the people who get the least out of AI tools — because nobody taught them the
+          trick of asking properly — get the same leg up as everyone else.
+        </p>
+        <div class="actions">
+          <a class="btn btn--primary" href="#install">Install AskWise</a>
+          <a class="btn btn--secondary" href="https://github.com/anish-ap2938/AskWise">Read the code</a>
+        </div>
+      </div>
+    </section>
+
   </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>AskWise — a free, local-first Chrome extension. MIT licensed.</p>
+      <ul class="footer-links">
+        <li><a href="privacy/index.html">Privacy policy</a></li>
+        <li><a href="https://github.com/anish-ap2938/AskWise">GitHub</a></li>
+        <li><a href="https://github.com/anish-ap2938/AskWise/issues">Issues</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var list = document.querySelector('[role="tablist"]');
+      if (!list) return;
+      var tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
+
+      function select(tab, focus) {
+        tabs.forEach(function (t) {
+          var on = t === tab;
+          t.setAttribute("aria-selected", on ? "true" : "false");
+          t.tabIndex = on ? 0 : -1;
+          document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+        });
+        if (focus) tab.focus();
+      }
+
+      list.addEventListener("click", function (e) {
+        var tab = e.target.closest('[role="tab"]');
+        if (tab) select(tab, false);
+      });
+
+      list.addEventListener("keydown", function (e) {
+        var i = tabs.indexOf(document.activeElement);
+        if (i < 0) return;
+        var next =
+          e.key === "ArrowRight" ? (i + 1) % tabs.length :
+          e.key === "ArrowLeft" ? (i - 1 + tabs.length) % tabs.length :
+          e.key === "Home" ? 0 :
+          e.key === "End" ? tabs.length - 1 : -1;
+        if (next < 0) return;
+        e.preventDefault();
+        select(tabs[next], true);
+      });
+    })();
+  </script>
 </body>
 </html>

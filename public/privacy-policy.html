@@ -6,33 +6,247 @@
   <title>Privacy Policy — AskWise Chrome Extension</title>
   <meta name="robots" content="index,follow" />
   <meta name="description" content="Official privacy policy for the AskWise Chrome extension." />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#12151a" media="(prefers-color-scheme: dark)" />
   <style>
+    /* Self-contained: this file ships inside the extension package, so it cannot
+       depend on the site stylesheet. Palette matches the extension's options page. */
+    :root {
+      color-scheme: light dark;
+
+      --surface: #ffffff;
+      --sunken: #f5f6f8;
+      --hairline: #e3e6ec;
+      --hairline-strong: #c9ced8;
+      --ink: #14181f;
+      --ink-muted: #4d5462;
+      --ink-faint: #6b7280;
+      --accent: #e0930b;
+      --accent-ink: #8a5300;
+      --accent-soft: #fdf3e0;
+      --link: #1a4fbd;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface: #12151a;
+        --sunken: #1a1e25;
+        --hairline: #2c313b;
+        --hairline-strong: #3d444f;
+        --ink: #eef1f6;
+        --ink-muted: #a9b1bd;
+        --ink-faint: #8b939f;
+        --accent: #f2b23b;
+        --accent-ink: #f4c063;
+        --accent-soft: rgba(242, 178, 59, 0.14);
+        --link: #8fb4ff;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
     body {
       margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      background: #fff;
-      color: #111;
+      background: var(--surface);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
       line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
     }
-    main { max-width: 740px; margin: 0 auto; padding: 40px 20px 96px; }
-    h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 0.4rem; }
-    h2 { font-size: 1.2rem; margin: 2rem 0 0.55rem; }
-    p, li { font-size: 1rem; }
-    .meta { color: #444; margin-bottom: 1.5rem; }
-    ul { padding-left: 1.25rem; }
-    li { margin: 0.4rem 0; }
+
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+    }
+    .skip-link:focus {
+      left: 24px;
+      top: 12px;
+      z-index: 2;
+      padding: 8px 12px;
+      background: var(--surface);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 8px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--hairline);
+      background: var(--surface);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .brand svg { color: var(--accent); flex: none; }
+
+    main { padding: 48px 0 96px; }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+      font-weight: 650;
+    }
+
+    h2 {
+      margin: 48px 0 12px;
+      font-size: 17px;
+      line-height: 1.4;
+      font-weight: 600;
+      scroll-margin-top: 24px;
+    }
+
+    /* The number is decorative next to the heading text, so it stays out of the
+       accessible name and out of the copy flow. */
+    h2 > .num {
+      display: inline-block;
+      min-width: 22px;
+      color: var(--ink-faint);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+
+    p, li { color: var(--ink-muted); }
+    p { margin: 0 0 14px; }
+    strong { color: var(--ink); font-weight: 600; }
+
+    .meta {
+      margin: 20px 0 28px;
+      padding: 16px;
+      border: 1px solid var(--hairline);
+      border-radius: 12px;
+      background: var(--sunken);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .lede { font-size: 17px; color: var(--ink-muted); }
+
+    nav.toc {
+      margin: 32px 0 8px;
+      padding-top: 24px;
+      border-top: 1px solid var(--hairline);
+    }
+
+    nav.toc h2 {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    nav.toc ol {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 4px 24px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: toc;
+      font-size: 14px;
+    }
+
+    nav.toc li { counter-increment: toc; }
+
+    nav.toc a {
+      display: block;
+      padding: 3px 0;
+      color: var(--ink-muted);
+      text-decoration: none;
+    }
+
+    nav.toc a::before {
+      content: counter(toc) ". ";
+      color: var(--ink-faint);
+      font-variant-numeric: tabular-nums;
+    }
+
+    nav.toc a:hover { color: var(--ink); }
+
+    ul { margin: 0 0 14px; padding-left: 0; list-style: none; }
+
+    ul li {
+      position: relative;
+      margin: 8px 0;
+      padding-left: 18px;
+    }
+
+    ul li::before {
+      content: "";
+      position: absolute;
+      left: 2px;
+      top: 12px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--hairline-strong);
+    }
+
     code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.9em;
-      background: #f4f4f5;
-      padding: 0.05em 0.3em;
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.88em;
     }
-    a { color: #0b57d0; }
+
+    a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+    a:hover { text-decoration-thickness: 2px; }
+
+    :focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--hairline);
+      font-size: 13px;
+      color: var(--ink-faint);
+    }
+
+    @media print {
+      nav.toc, header { display: none; }
+      body { font-size: 11pt; }
+      a { color: inherit; }
+    }
   </style>
 </head>
 <body>
-  <main>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header>
+    <div class="wrap">
+      <span class="brand">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
+          <path d="M9.1 1.4 3.3 8.7a.5.5 0 0 0 .39.81H7l-.9 4.9a.3.3 0 0 0 .53.24l5.8-7.3a.5.5 0 0 0-.39-.81H9l.63-4.15a.3.3 0 0 0-.53-.24Z" />
+        </svg>
+        AskWise
+      </span>
+    </div>
+  </header>
+
+  <main class="wrap" id="main">
     <h1>Privacy Policy for AskWise</h1>
+
     <p class="meta">
       <strong>Effective date:</strong> July 16, 2026<br />
       <strong>Last updated:</strong> July 17, 2026<br />
@@ -41,13 +255,32 @@
       (<a href="https://github.com/anish-ap2938/AskWise">github.com/anish-ap2938/AskWise</a>)
     </p>
 
-    <p>
+    <p class="lede">
       This Privacy Policy explains how the AskWise Chrome extension (“AskWise”, “we”, “us”)
       handles information when you install and use the extension. This page is the official
       privacy policy for AskWise.
     </p>
 
-    <h2>1. Overview</h2>
+    <nav class="toc" aria-labelledby="toc-heading">
+      <h2 id="toc-heading">Contents</h2>
+      <ol>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#limited-use">Chrome Web Store Limited Use</a></li>
+        <li><a href="#accessed">Information accessed</a></li>
+        <li><a href="#usage">How information is used</a></li>
+        <li><a href="#leaves">What leaves your device</a></li>
+        <li><a href="#redaction">Redaction and review</a></li>
+        <li><a href="#websites">Websites where it operates</a></li>
+        <li><a href="#third-party">Third-party services</a></li>
+        <li><a href="#retention">Storage and retention</a></li>
+        <li><a href="#permissions">Permissions</a></li>
+        <li><a href="#children">Children’s privacy</a></li>
+        <li><a href="#changes">Changes to this policy</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="overview"><span class="num" aria-hidden="true">1</span>Overview</h2>
     <p>
       AskWise improves text that you type into AI chat composers (for example ChatGPT, Claude,
       Gemini, Perplexity, DeepSeek, and Microsoft Copilot). AskWise does <strong>not</strong>
@@ -55,7 +288,7 @@
       <strong>not</strong> use analytics or advertising trackers.
     </p>
 
-    <h2>2. Chrome Web Store Limited Use Compliance</h2>
+    <h2 id="limited-use"><span class="num" aria-hidden="true">2</span>Chrome Web Store Limited Use Compliance</h2>
     <p>
       AskWise’s use of information complies with the Chrome Web Store User Data Policy, including
       the Limited Use requirements. AskWise uses user data only to provide or improve its
@@ -67,7 +300,7 @@
       Data Policy, including the Limited Use requirements.
     </p>
 
-    <h2>3. Information the extension accesses</h2>
+    <h2 id="accessed"><span class="num" aria-hidden="true">3</span>Information the extension accesses</h2>
     <p>When you use AskWise, the extension may access:</p>
     <ul>
       <li>
@@ -95,7 +328,7 @@
       active composer when you use Improve.
     </p>
 
-    <h2>4. How information is used</h2>
+    <h2 id="usage"><span class="num" aria-hidden="true">4</span>How information is used</h2>
     <ul>
       <li>To classify and rewrite your prompt into a clearer, structured prompt.</li>
       <li>To show before/after scoring, diffs, and variants inside the extension UI.</li>
@@ -107,7 +340,7 @@
       to determine creditworthiness or for lending purposes.
     </p>
 
-    <h2>5. What leaves your device</h2>
+    <h2 id="leaves"><span class="num" aria-hidden="true">5</span>What leaves your device</h2>
     <ul>
       <li>
         <strong>Default / Simple / Structured improve:</strong> processed entirely on your device.
@@ -127,14 +360,14 @@
       </li>
     </ul>
 
-    <h2>6. Redaction and review</h2>
+    <h2 id="redaction"><span class="num" aria-hidden="true">6</span>Redaction and review</h2>
     <p>
       Before on-device inference, AskWise attempts to redact common sensitive-data patterns, such
       as API tokens, email addresses, and payment-card numbers. Automated redaction may not identify
       every sensitive value, so users should review generated prompts before using them.
     </p>
 
-    <h2>7. Websites where AskWise operates</h2>
+    <h2 id="websites"><span class="num" aria-hidden="true">7</span>Websites where AskWise operates</h2>
     <p>
       AskWise runs a content script on supported AI chat websites to display its interface and
       access the active composer. AskWise does not independently transmit prompt text to those
@@ -142,7 +375,7 @@
       website normally.
     </p>
 
-    <h2>8. Third-party services</h2>
+    <h2 id="third-party"><span class="num" aria-hidden="true">8</span>Third-party services</h2>
     <ul>
       <li>
         <strong>Hugging Face or MLC infrastructure</strong> receives model-download requests for
@@ -155,7 +388,7 @@
       normally.
     </p>
 
-    <h2>9. Storage and retention</h2>
+    <h2 id="retention"><span class="num" aria-hidden="true">9</span>Storage and retention</h2>
     <p>
       Settings, templates, and on-device model download progress are stored in
       <code>chrome.storage.local</code> on your device. Cached model weights may be
@@ -164,7 +397,7 @@
       copies of your prompts on any AskWise-operated server.
     </p>
 
-    <h2>10. Permissions</h2>
+    <h2 id="permissions"><span class="num" aria-hidden="true">10</span>Permissions</h2>
     <ul>
       <li><code>storage</code> — settings, templates, and model download progress</li>
       <li><code>offscreen</code> — run the on-device WebGPU model in a hidden document</li>
@@ -178,25 +411,30 @@
       </li>
     </ul>
 
-    <h2>11. Children’s privacy</h2>
+    <h2 id="children"><span class="num" aria-hidden="true">11</span>Children’s privacy</h2>
     <p>
       AskWise is not directed to children under 13, and we do not knowingly collect personal
       information from children.
     </p>
 
-    <h2>12. Changes to this policy</h2>
+    <h2 id="changes"><span class="num" aria-hidden="true">12</span>Changes to this policy</h2>
     <p>
       We may update this Privacy Policy from time to time. The “Last updated” date at the top of
       this page will change when we do. Continued use of AskWise after an update means you accept
       the revised policy.
     </p>
 
-    <h2>13. Contact</h2>
+    <h2 id="contact"><span class="num" aria-hidden="true">13</span>Contact</h2>
     <p>
       For privacy questions about AskWise, open an issue at
       <a href="https://github.com/anish-ap2938/AskWise/issues">https://github.com/anish-ap2938/AskWise/issues</a>
       or contact the publisher email listed on the Chrome Web Store listing.
     </p>
+
+    <footer>
+      AskWise is open source under the MIT licence. If a sentence here does not match what the
+      code does, that is a bug — please report it.
+    </footer>
   </main>
 </body>
 </html>

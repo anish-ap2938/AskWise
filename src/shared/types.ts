@@ -14,6 +14,15 @@ export type ModeId =
   | "writing"
   | "data_analysis"
   | "agent_task"
+  | "learning"
+  | "planning"
+  | "marketing"
+  | "business"
+  | "finance"
+  | "health"
+  | "math_help"
+  | "translation"
+  | "image_gen"
   | "custom";
 
 export type SlotId =
@@ -159,6 +168,15 @@ export const modeIdSchema = z.enum([
   "writing",
   "data_analysis",
   "agent_task",
+  "learning",
+  "planning",
+  "marketing",
+  "business",
+  "finance",
+  "health",
+  "math_help",
+  "translation",
+  "image_gen",
   "custom",
 ]);
 

@@ -8,17 +8,35 @@ import { resumeJobRecipe } from "./resumeJob";
 import { writingRecipe } from "./writing";
 import { dataAnalysisRecipe } from "./dataAnalysis";
 import { agentTaskRecipe } from "./agentTask";
+import { learningRecipe } from "./learning";
+import { planningRecipe } from "./planning";
+import { marketingRecipe } from "./marketing";
+import { businessRecipe } from "./business";
+import { financeRecipe } from "./finance";
+import { healthRecipe } from "./health";
+import { mathHelpRecipe } from "./mathHelp";
+import { translationRecipe } from "./translation";
+import { imageGenRecipe } from "./imageGen";
 
 export const recipes: Recipe[] = [
   quickImproveRecipe,
   simpleAnswerRecipe,
+  learningRecipe,
   researchRecipe,
   appBuilderRecipe,
   codingDebugRecipe,
-  resumeJobRecipe,
-  writingRecipe,
-  dataAnalysisRecipe,
   agentTaskRecipe,
+  dataAnalysisRecipe,
+  mathHelpRecipe,
+  writingRecipe,
+  translationRecipe,
+  marketingRecipe,
+  businessRecipe,
+  resumeJobRecipe,
+  financeRecipe,
+  healthRecipe,
+  planningRecipe,
+  imageGenRecipe,
 ];
 
 const recipeMap = new Map<ModeId, Recipe>(
@@ -31,3 +49,5 @@ export function getRecipe(mode: ModeId): Recipe {
 
 export { quickImproveRecipe, simpleAnswerRecipe, researchRecipe, appBuilderRecipe };
 export { codingDebugRecipe, resumeJobRecipe, writingRecipe, dataAnalysisRecipe, agentTaskRecipe };
+export { learningRecipe, planningRecipe, marketingRecipe, businessRecipe, financeRecipe };
+export { healthRecipe, mathHelpRecipe, translationRecipe, imageGenRecipe };

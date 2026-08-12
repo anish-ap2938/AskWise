@@ -3,8 +3,8 @@ import type { SubRecipeDef } from "../types";
 /** Legal / compliance prompts — jurisdiction-aware, not legal advice. */
 export const legalPack: SubRecipeDef[] = [
   {
-    id: "quick_improve/legal_explain",
-    parent: "quick_improve",
+    id: "learning/legal_explain",
+    parent: "learning",
     label: "Legal Explain",
     triggers: [
       "\\b(legal|lawsuit|liability|statute|regulation|compliance|gdpr|hipaa|contract|nda|tos|terms of service|intellectual property|copyright|trademark|patent)\\b",

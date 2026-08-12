@@ -1,42 +1,1142 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/*
+ * AskWise widget styles.
+ *
+ * These are injected as a single <style> into the shadow root that lives on a
+ * third-party page, so two rules apply everywhere below:
+ *   1. Nothing may depend on host-page styles. `:host { all: initial }` cuts
+ *      inheritance, and every element we render gets its own type/colour.
+ *   2. Sizes are px, never rem/em. `rem` resolves against the host document's
+ *      root font size, which ChatGPT/Claude/etc. are free to change.
+ *
+ * Spacing is a 4px grid (--aw-sp-*), type is a fixed 5-step scale (--aw-fs-*).
+ */
 
 :host {
   all: initial;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Grid ------------------------------------------------------------- */
+  --aw-sp-1: 4px;
+  --aw-sp-2: 8px;
+  --aw-sp-3: 12px;
+  --aw-sp-4: 16px;
+  --aw-sp-5: 20px;
+  --aw-sp-6: 24px;
+
+  /* Type ------------------------------------------------------------- */
+  --aw-fs-xs: 11px;
+  --aw-fs-sm: 12px;
+  --aw-fs-md: 13px;
+  --aw-fs-lg: 15px;
+  --aw-fs-xl: 20px;
+
+  /* Shape ------------------------------------------------------------ */
+  --aw-radius-sm: 6px;
+  --aw-radius-md: 8px;
+  --aw-radius-lg: 12px;
+  --aw-radius-pill: 999px;
+
+  /* Motion ----------------------------------------------------------- */
+  --aw-dur: 140ms;
+  --aw-dur-slow: 200ms;
+  --aw-ease: cubic-bezier(0.2, 0.6, 0.25, 1);
+
+  /* Colour — light --------------------------------------------------- */
+  --aw-bg: #ffffff;
+  --aw-bg-subtle: #f5f6f8;
+  --aw-bg-hover: #eceef2;
+  --aw-border: #e3e6ec;
+  --aw-border-strong: #c9ced8;
+
+  /* Muted/faint both clear 4.5:1 on --aw-bg *and* on --aw-bg-subtle, which is
+     where most secondary text actually sits. */
+  --aw-text: #14181f;
+  --aw-text-muted: #4d5462;
+  --aw-text-faint: #616874;
+
+  /* Amber accent, taken from the extension icon. Used for the mark, the
+     active tab indicator, focus rings and fillable placeholders — never for
+     large fills, where it would read as a warning. */
+  --aw-accent: #e0930b;
+  --aw-accent-text: #8a5300;
+  --aw-accent-soft: #fdf3e0;
+  --aw-focus: #b8760a;
+
+  /* Primary action is ink, not a brand colour: it stays legible on every
+     host page and keeps the accent scarce. */
+  --aw-primary-bg: #171b23;
+  --aw-primary-bg-hover: #2a313d;
+  --aw-primary-bg-active: #0d1015;
+  --aw-primary-text: #ffffff;
+
+  --aw-success: #0f7a45;
+  --aw-success-soft: #e4f4ea;
+  --aw-danger: #b3261e;
+  --aw-danger-soft: #fdeceb;
+  --aw-danger-border: #f3cbc8;
+
+  --aw-shadow-sm: 0 1px 2px rgba(16, 20, 28, 0.08), 0 2px 6px rgba(16, 20, 28, 0.06);
+  --aw-shadow-lg: 0 2px 4px rgba(16, 20, 28, 0.06), 0 12px 32px rgba(16, 20, 28, 0.16);
+
+  /* Reset ------------------------------------------------------------ */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: var(--aw-fs-md);
+  line-height: 1.5;
+  color: var(--aw-text);
+  color-scheme: light dark;
+  -webkit-font-smoothing: antialiased;
 }
 
 @media (prefers-color-scheme: dark) {
-  .aw-surface {
-    @apply bg-zinc-900 text-zinc-100 border-zinc-700;
-  }
-  .aw-muted {
-    @apply text-zinc-400;
+  :host {
+    --aw-bg: #171a20;
+    --aw-bg-subtle: #1e222a;
+    --aw-bg-hover: #272c35;
+    --aw-border: #2c313b;
+    --aw-border-strong: #3d444f;
+
+    --aw-text: #eef1f6;
+    --aw-text-muted: #a9b1bd;
+    --aw-text-faint: #8b939f;
+
+    --aw-accent: #f2b23b;
+    --aw-accent-text: #f4c063;
+    --aw-accent-soft: rgba(242, 178, 59, 0.14);
+    --aw-focus: #f2b23b;
+
+    --aw-primary-bg: #eef1f6;
+    --aw-primary-bg-hover: #ffffff;
+    --aw-primary-bg-active: #d5dae2;
+    --aw-primary-text: #14181f;
+
+    --aw-success: #5ed49a;
+    --aw-success-soft: rgba(94, 212, 154, 0.14);
+    --aw-danger: #ff9d94;
+    --aw-danger-soft: rgba(255, 107, 94, 0.12);
+    --aw-danger-border: rgba(255, 107, 94, 0.32);
+
+    --aw-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+    --aw-shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.55);
   }
 }
 
-@media (prefers-color-scheme: light) {
-  .aw-surface {
-    @apply bg-white text-zinc-900 border-zinc-200;
-  }
-  .aw-muted {
-    @apply text-zinc-500;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+p,
+ul,
+li,
+h1,
+h2,
+h3 {
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--aw-focus);
+  outline-offset: 2px;
+  border-radius: var(--aw-radius-sm);
+}
+
+/* ---------------------------------------------------------------- Pill */
 
 .aw-pill {
-  @apply aw-surface inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-medium shadow-lg cursor-pointer select-none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--aw-sp-2);
+  height: 30px;
+  padding: 0 10px 0 var(--aw-sp-2);
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius-pill);
+  background: var(--aw-bg);
+  color: var(--aw-text);
+  font-size: var(--aw-fs-sm);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  box-shadow: var(--aw-shadow-sm);
+  user-select: none;
+  transition:
+    transform var(--aw-dur) var(--aw-ease),
+    box-shadow var(--aw-dur) var(--aw-ease),
+    border-color var(--aw-dur) var(--aw-ease);
 }
+
+.aw-pill:hover {
+  border-color: var(--aw-border-strong);
+  box-shadow: var(--aw-shadow-lg);
+  transform: translateY(-1px);
+}
+
+.aw-pill:active {
+  transform: translateY(0);
+  box-shadow: var(--aw-shadow-sm);
+}
+
+.aw-pill-mark {
+  display: block;
+  color: var(--aw-accent);
+  flex: none;
+}
+
+.aw-pill-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding-left: var(--aw-sp-2);
+  border-left: 1px solid var(--aw-border);
+  color: var(--aw-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.aw-band-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.aw-band-weak {
+  color: var(--aw-danger);
+}
+
+/* The accent itself is only 2.5:1 on white, so band *text* uses the darkened
+   accent while the accent proper stays on fills and indicators. */
+.aw-band-okay {
+  color: var(--aw-accent-text);
+}
+
+.aw-band-strong {
+  color: var(--aw-success);
+}
+
+/* ------------------------------------------------------------- Popover */
 
 .aw-popover {
-  @apply aw-surface z-[2147483647] w-[min(380px,calc(100vw-16px))] rounded-xl border shadow-2xl;
+  display: flex;
+  flex-direction: column;
+  width: min(400px, calc(100vw - 16px));
+  overflow: hidden;
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius-lg);
+  background: var(--aw-bg);
+  color: var(--aw-text);
+  box-shadow: var(--aw-shadow-lg);
 }
 
-.aw-tab-active {
-  @apply border-b-2 border-violet-500 text-violet-600 dark:text-violet-400;
+.aw-popover[data-ready="true"] {
+  animation: aw-pop-in var(--aw-dur-slow) var(--aw-ease);
+}
+
+@keyframes aw-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.aw-row {
+  display: flex;
+  align-items: center;
+  gap: var(--aw-sp-2);
+  padding: 10px var(--aw-sp-4);
+  border-bottom: 1px solid var(--aw-border);
+}
+
+.aw-header {
+  flex: none;
+  justify-content: space-between;
+}
+
+.aw-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--aw-sp-2);
+  min-width: 0;
+}
+
+.aw-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.aw-footer {
+  flex: none;
+  gap: var(--aw-sp-2);
+  padding: var(--aw-sp-3) var(--aw-sp-4);
+  border-bottom: none;
+  border-top: 1px solid var(--aw-border);
+}
+
+/* -------------------------------------------------------- Form control */
+
+.aw-select {
+  height: 26px;
+  max-width: 150px;
+  padding: 0 var(--aw-sp-2);
+  border: 1px solid var(--aw-border-strong);
+  border-radius: var(--aw-radius-pill);
+  background: var(--aw-bg);
+  color: var(--aw-text);
+  font-size: var(--aw-fs-sm);
+  font-weight: 500;
+  transition: border-color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-select:hover {
+  border-color: var(--aw-text-faint);
+}
+
+.aw-input {
+  min-width: 0;
+  flex: 1;
+  height: 28px;
+  padding: 0 var(--aw-sp-2);
+  border: 1px solid var(--aw-border-strong);
+  border-radius: var(--aw-radius-md);
+  background: var(--aw-bg);
+  color: var(--aw-text);
+  font-size: var(--aw-fs-sm);
+  transition:
+    border-color var(--aw-dur) var(--aw-ease),
+    box-shadow var(--aw-dur) var(--aw-ease);
+}
+
+.aw-input::placeholder {
+  color: var(--aw-text-faint);
+}
+
+.aw-input:focus-visible {
+  outline: none;
+  border-color: var(--aw-focus);
+  box-shadow: 0 0 0 3px var(--aw-accent-soft);
+}
+
+.aw-input:disabled {
+  opacity: 0.55;
+}
+
+/* ------------------------------------------------------------- Buttons */
+
+.aw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 var(--aw-sp-3);
+  border-radius: var(--aw-radius-md);
+  font-size: var(--aw-fs-md);
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color var(--aw-dur) var(--aw-ease),
+    border-color var(--aw-dur) var(--aw-ease),
+    color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-btn-primary {
+  flex: 1;
+  background: var(--aw-primary-bg);
+  color: var(--aw-primary-text);
+}
+
+.aw-btn-primary:hover:not(:disabled) {
+  background: var(--aw-primary-bg-hover);
+}
+
+.aw-btn-primary:active:not(:disabled) {
+  background: var(--aw-primary-bg-active);
+}
+
+.aw-btn-secondary {
+  border: 1px solid var(--aw-border-strong);
+  background: var(--aw-bg);
+  color: var(--aw-text);
+}
+
+.aw-btn-secondary:hover:not(:disabled) {
+  background: var(--aw-bg-hover);
+}
+
+.aw-btn-sm {
+  height: 26px;
+  padding: 0 10px;
+  font-size: var(--aw-fs-sm);
+}
+
+.aw-btn:disabled {
+  opacity: 0.5;
+}
+
+/* Square icon-only button — 28px box keeps the target reachable without
+   bloating the header. */
+.aw-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: var(--aw-radius-md);
+  color: var(--aw-text-faint);
+  transition:
+    background-color var(--aw-dur) var(--aw-ease),
+    color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-icon-btn:hover {
+  background: var(--aw-bg-hover);
+  color: var(--aw-text);
+}
+
+/* --------------------------------------------------------------- Chips */
+
+.aw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--aw-sp-1);
+  max-width: 100%;
+  min-width: 0;
+  height: 20px;
+  padding: 0 var(--aw-sp-2);
+  border-radius: var(--aw-radius-pill);
+  background: var(--aw-bg-subtle);
+  color: var(--aw-text-muted);
+  font-size: var(--aw-fs-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aw-chip-success {
+  background: var(--aw-success-soft);
+  color: var(--aw-success);
+  font-variant-numeric: tabular-nums;
+}
+
+.aw-truncate {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.aw-grow {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+/* --------------------------------------------------------------- Score */
+
+.aw-score-block {
+  border-bottom: 1px solid var(--aw-border);
+}
+
+/* Everything inside this button is a <span> on purpose — a button may only
+   contain phrasing content, so the detail list lives outside it. */
+.aw-score {
+  display: block;
+  width: 100%;
+  padding: var(--aw-sp-3) var(--aw-sp-4);
+  transition: background-color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-score:hover {
+  background: var(--aw-bg-subtle);
+}
+
+.aw-score-head {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--aw-sp-2);
+}
+
+.aw-score-values {
+  display: flex;
+  align-items: baseline;
+  gap: var(--aw-sp-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.aw-score-before {
+  font-size: var(--aw-fs-lg);
+  font-weight: 500;
+  color: var(--aw-text-faint);
+}
+
+.aw-score-arrow {
+  color: var(--aw-text-faint);
+  font-size: var(--aw-fs-sm);
+}
+
+.aw-score-after {
+  font-size: var(--aw-fs-xl);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.aw-score-max {
+  font-size: var(--aw-fs-xs);
+  color: var(--aw-text-faint);
+}
+
+.aw-score-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--aw-sp-1);
+  flex: none;
+  font-size: var(--aw-fs-sm);
+  color: var(--aw-text-muted);
+}
+
+.aw-score-toggle svg {
+  transition: transform var(--aw-dur) var(--aw-ease);
+}
+
+/* Two stacked bars: the faint one is the original prompt, the solid one the
+   rewrite. Reads as progress without needing a legend. */
+.aw-meter {
+  position: relative;
+  height: 4px;
+  margin-top: 10px;
+  border-radius: var(--aw-radius-pill);
+  background: var(--aw-bg-hover);
+  overflow: hidden;
+}
+
+.aw-meter-before,
+.aw-meter-after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  transition: width var(--aw-dur-slow) var(--aw-ease);
+}
+
+.aw-meter-before {
+  background: var(--aw-border-strong);
+}
+
+.aw-meter-after {
+  background: var(--aw-text);
+  opacity: 0.85;
+}
+
+.aw-score-summary {
+  display: block;
+  margin-top: var(--aw-sp-2);
+  font-size: var(--aw-fs-sm);
+  color: var(--aw-text-muted);
+}
+
+.aw-score-detail {
+  margin: 0 var(--aw-sp-4) var(--aw-sp-3);
+  padding: var(--aw-sp-2) var(--aw-sp-3);
+  border-radius: var(--aw-radius-md);
+  background: var(--aw-bg-subtle);
+}
+
+.aw-score-detail li {
+  position: relative;
+  padding-left: var(--aw-sp-3);
+  font-size: var(--aw-fs-sm);
+  color: var(--aw-text-muted);
+}
+
+.aw-score-detail li + li {
+  margin-top: 6px;
+}
+
+.aw-score-detail li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--aw-text-faint);
+}
+
+/* ------------------------------------------------------------- Secrets */
+
+.aw-secrets {
+  flex: none;
+  padding: var(--aw-sp-2) var(--aw-sp-4);
+  border-bottom: 1px solid var(--aw-danger-border);
+  background: var(--aw-danger-soft);
+}
+
+.aw-secrets-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  font-size: var(--aw-fs-sm);
+  font-weight: 500;
+  color: var(--aw-danger);
+}
+
+.aw-secrets-list {
+  margin-top: 6px;
+  font-size: var(--aw-fs-sm);
+  color: var(--aw-danger);
+}
+
+.aw-secrets-list li + li {
+  margin-top: 2px;
+}
+
+.aw-secrets-type {
+  color: var(--aw-text-muted);
+}
+
+.aw-secrets-note {
+  margin-top: 3px;
+  color: var(--aw-text-muted);
+  font-size: var(--aw-fs-xs);
+  line-height: 1.45;
+}
+
+/* ---------------------------------------------------------------- Tabs */
+
+.aw-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--aw-border);
+  background: var(--aw-bg);
+}
+
+.aw-tab {
+  position: relative;
+  flex: 1;
+  height: 34px;
+  font-size: var(--aw-fs-sm);
+  font-weight: 500;
+  color: var(--aw-text-faint);
+  transition: color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-tab::after {
+  content: "";
+  position: absolute;
+  left: var(--aw-sp-2);
+  right: var(--aw-sp-2);
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--aw-accent);
+  opacity: 0;
+  transform: scaleX(0.6);
+  transition:
+    opacity var(--aw-dur) var(--aw-ease),
+    transform var(--aw-dur) var(--aw-ease);
+}
+
+.aw-tab:hover {
+  color: var(--aw-text-muted);
+}
+
+.aw-tab[aria-selected="true"] {
+  color: var(--aw-text);
+}
+
+.aw-tab[aria-selected="true"]::after {
+  opacity: 1;
+  transform: none;
+}
+
+/* ------------------------------------------------------------- Preview */
+
+.aw-preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--aw-sp-2);
+  padding: var(--aw-sp-2) var(--aw-sp-4) 0;
+}
+
+.aw-preview-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: var(--aw-fs-xs);
+  color: var(--aw-text-faint);
+}
+
+.aw-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 var(--aw-sp-2);
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius-pill);
+  font-size: var(--aw-fs-xs);
+  font-weight: 500;
+  color: var(--aw-text-muted);
+  transition:
+    background-color var(--aw-dur) var(--aw-ease),
+    border-color var(--aw-dur) var(--aw-ease),
+    color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-toggle:hover {
+  border-color: var(--aw-border-strong);
+  color: var(--aw-text);
+}
+
+.aw-toggle[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--aw-accent-soft);
+  color: var(--aw-accent-text);
+}
+
+.aw-preview {
+  padding: var(--aw-sp-2) var(--aw-sp-4) var(--aw-sp-3);
+  font-size: var(--aw-fs-md);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .aw-placeholder {
-  @apply rounded bg-amber-100 px-1 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200;
+  display: inline;
+  padding: 1px 3px;
+  border-radius: 4px;
+  background: var(--aw-accent-soft);
+  color: var(--aw-accent-text);
+  font-weight: 500;
+  box-shadow: inset 0 -1px 0 var(--aw-accent);
+  transition: background-color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-placeholder:hover {
+  background: var(--aw-accent);
+  color: #14181f;
+}
+
+.aw-diff-added {
+  border-radius: 3px;
+  background: var(--aw-success-soft);
+  color: var(--aw-success);
+}
+
+.aw-diff-same {
+  color: var(--aw-text);
+  font-weight: 500;
+}
+
+/* Streaming caret — a token-by-token cue that something is still arriving. */
+.aw-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--aw-accent);
+  animation: aw-blink 1s steps(2, start) infinite;
+}
+
+@keyframes aw-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------ Loading / error */
+
+.aw-skeleton {
+  padding: var(--aw-sp-3) var(--aw-sp-4);
+}
+
+.aw-skeleton-line {
+  height: 9px;
+  margin-bottom: 10px;
+  border-radius: var(--aw-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--aw-bg-subtle) 0%,
+    var(--aw-bg-hover) 50%,
+    var(--aw-bg-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: aw-shimmer 1.2s var(--aw-ease) infinite;
+}
+
+.aw-skeleton-line:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes aw-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.aw-note {
+  padding: 0 var(--aw-sp-4) var(--aw-sp-3);
+  font-size: var(--aw-fs-sm);
+  color: var(--aw-text-muted);
+}
+
+.aw-note-action {
+  display: flex;
+  align-items: center;
+  gap: var(--aw-sp-3);
+}
+
+.aw-note-action .aw-btn {
+  flex: none;
+}
+
+.aw-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--aw-sp-2);
+  margin: 0 var(--aw-sp-4) var(--aw-sp-3);
+  padding: var(--aw-sp-2) var(--aw-sp-3);
+  border: 1px solid var(--aw-danger-border);
+  border-radius: var(--aw-radius-md);
+  background: var(--aw-danger-soft);
+  font-size: var(--aw-fs-sm);
+  color: var(--aw-text);
+}
+
+.aw-error-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.aw-error .aw-btn {
+  flex: none;
+}
+
+/* ------------------------------------------------------------ Fill row */
+
+.aw-fill {
+  display: flex;
+  align-items: center;
+  gap: var(--aw-sp-2);
+  padding: var(--aw-sp-2) var(--aw-sp-4);
+  border-top: 1px solid var(--aw-border);
+  background: var(--aw-bg-subtle);
+}
+
+.aw-fill-label {
+  max-width: 108px;
+  font-size: var(--aw-fs-xs);
+  color: var(--aw-text-muted);
+}
+
+/* ---------------------------------------------------------- Attach bar */
+
+.aw-attach {
+  flex: none;
+  padding: var(--aw-sp-2) var(--aw-sp-4);
+  border-top: 1px solid var(--aw-border);
+}
+
+.aw-attach-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.aw-attach-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  height: 24px;
+  padding: 0 var(--aw-sp-1) 0 var(--aw-sp-2);
+  border-radius: var(--aw-radius-pill);
+  background: var(--aw-bg-subtle);
+  font-size: var(--aw-fs-xs);
+}
+
+.aw-attach-name {
+  max-width: 130px;
+}
+
+.aw-attach-meta {
+  color: var(--aw-text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.aw-attach-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  color: var(--aw-text-faint);
+  transition:
+    background-color var(--aw-dur) var(--aw-ease),
+    color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-attach-remove:hover {
+  background: var(--aw-danger-soft);
+  color: var(--aw-danger);
+}
+
+.aw-attach-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 var(--aw-sp-2);
+  border: 1px dashed var(--aw-border-strong);
+  border-radius: var(--aw-radius-pill);
+  font-size: var(--aw-fs-xs);
+  font-weight: 500;
+  color: var(--aw-text-muted);
+  transition:
+    border-color var(--aw-dur) var(--aw-ease),
+    color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-attach-add:hover:not(:disabled) {
+  border-color: var(--aw-accent);
+  color: var(--aw-accent-text);
+}
+
+.aw-attach-hint {
+  margin-top: 6px;
+  font-size: var(--aw-fs-xs);
+  color: var(--aw-text-faint);
+}
+
+/* --------------------------------------------------------------- Refine */
+
+.aw-chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--aw-sp-2);
+  padding: var(--aw-sp-3) var(--aw-sp-4);
+}
+
+.aw-msg {
+  max-width: 85%;
+  padding: 6px 10px;
+  border-radius: var(--aw-radius-lg);
+  font-size: var(--aw-fs-sm);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.aw-msg-user {
+  align-self: flex-end;
+  border-bottom-right-radius: var(--aw-radius-sm);
+  background: var(--aw-primary-bg);
+  color: var(--aw-primary-text);
+}
+
+.aw-msg-assistant {
+  align-self: flex-start;
+  border-bottom-left-radius: var(--aw-radius-sm);
+  background: var(--aw-bg-subtle);
+  color: var(--aw-text);
+}
+
+.aw-msg-pending {
+  color: var(--aw-text-muted);
+}
+
+.aw-dots span {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin-right: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: aw-bounce 1s var(--aw-ease) infinite;
+}
+
+.aw-dots span:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.aw-dots span:nth-child(3) {
+  animation-delay: 0.24s;
+  margin-right: 0;
+}
+
+@keyframes aw-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+.aw-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--aw-sp-2) var(--aw-sp-4);
+  border-top: 1px solid var(--aw-border);
+}
+
+.aw-starter {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--aw-border);
+  border-radius: var(--aw-radius-pill);
+  font-size: var(--aw-fs-xs);
+  font-weight: 500;
+  color: var(--aw-text-muted);
+  transition:
+    border-color var(--aw-dur) var(--aw-ease),
+    color var(--aw-dur) var(--aw-ease);
+}
+
+.aw-starter:hover:not(:disabled) {
+  border-color: var(--aw-border-strong);
+  color: var(--aw-text);
+}
+
+.aw-starter:disabled {
+  opacity: 0.5;
+}
+
+.aw-composer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--aw-sp-2) var(--aw-sp-4);
+  border-top: 1px solid var(--aw-border);
+}
+
+/* --------------------------------------------------------------- Toast */
+
+.aw-toast {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--aw-sp-2));
+  display: flex;
+  align-items: center;
+  gap: var(--aw-sp-3);
+  max-width: 320px;
+  padding: var(--aw-sp-2) var(--aw-sp-3);
+  border-radius: var(--aw-radius-md);
+  background: var(--aw-primary-bg);
+  color: var(--aw-primary-text);
+  font-size: var(--aw-fs-sm);
+  box-shadow: var(--aw-shadow-lg);
+  animation: aw-toast-in var(--aw-dur-slow) var(--aw-ease);
+}
+
+.aw-toast-action {
+  flex: none;
+  font-weight: 600;
+  color: var(--aw-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.aw-toast-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: var(--aw-radius-sm);
+  color: inherit;
+  opacity: 0.6;
+  transition: opacity var(--aw-dur) var(--aw-ease);
+}
+
+.aw-toast-close:hover {
+  opacity: 1;
+}
+
+@keyframes aw-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------- Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+
+  .aw-pill:hover {
+    transform: none;
+  }
+
+  .aw-caret,
+  .aw-dots span {
+    animation: none;
+  }
 }

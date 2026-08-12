@@ -1,5 +1,6 @@
 import type { ScoreResult } from "../../shared/types";
 import { summarizeFix } from "../../shared/diff";
+import { ChevronIcon } from "./Icons";
 
 interface ScoreRowProps {
   before: ScoreResult;
@@ -8,41 +9,53 @@ interface ScoreRowProps {
   onToggle: () => void;
 }
 
-function bandColor(band: ScoreResult["band"]): string {
-  switch (band) {
-    case "strong":
-      return "text-green-600 dark:text-green-400";
-    case "okay":
-      return "text-amber-600 dark:text-amber-400";
-    default:
-      return "text-red-600 dark:text-red-400";
-  }
-}
-
 export function ScoreRow({ before, after, expanded, onToggle }: ScoreRowProps) {
   const lift = after.total - before.total;
 
   return (
-    <div className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
-      <button type="button" className="flex w-full items-center justify-between" onClick={onToggle}>
-        <span className="flex items-baseline gap-2">
-          <span className={`text-2xl font-bold ${bandColor(before.band)}`}>{before.total}</span>
-          <span className="aw-muted text-lg">→</span>
-          <span className={`text-2xl font-bold ${bandColor(after.band)}`}>{after.total}</span>
-          {lift > 0 && (
-            <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700 dark:bg-green-900/40 dark:text-green-300">
-              +{lift}
+    <div className="aw-score-block">
+      <button
+        type="button"
+        className="aw-score"
+        onClick={onToggle}
+        aria-expanded={expanded}
+        aria-controls="aw-score-detail"
+      >
+        <span className="aw-score-head">
+          <span className="aw-score-values">
+            <span className="aw-score-before">{before.total}</span>
+            <span className="aw-score-arrow" aria-hidden="true">
+              →
             </span>
-          )}
+            <span className={`aw-score-after aw-band-${after.band}`}>
+              {after.total}
+            </span>
+            <span className="aw-score-max">/100</span>
+            {lift > 0 && <span className="aw-chip aw-chip-success">+{lift}</span>}
+          </span>
+          <span className="aw-score-toggle">
+            {expanded ? "Hide" : "Why"}
+            <ChevronIcon
+              style={{ transform: expanded ? "rotate(180deg)" : undefined }}
+            />
+          </span>
         </span>
-        <span className="aw-muted text-xs">{expanded ? "Hide details" : "Details"}</span>
+
+        <span className="aw-meter" aria-hidden="true">
+          <span className="aw-meter-before" style={{ width: `${before.total}%` }} />
+          <span className="aw-meter-after" style={{ width: `${after.total}%` }} />
+        </span>
+
+        <span className="aw-score-summary">{summarizeFix(before, after)}</span>
       </button>
-      <p className="mt-1 text-xs aw-muted">{summarizeFix(before, after)}</p>
-      {expanded && before.missing.length > 0 && (
-        <ul className="mt-2 space-y-1 text-xs aw-muted">
-          {before.missing.map((m) => (
-            <li key={m}>• {m}</li>
-          ))}
+
+      {expanded && (
+        <ul id="aw-score-detail" className="aw-score-detail">
+          {before.missing.length > 0 ? (
+            before.missing.map((m) => <li key={m}>{m}</li>)
+          ) : (
+            <li>Your prompt already covers everything the rubric checks for.</li>
+          )}
         </ul>
       )}
     </div>

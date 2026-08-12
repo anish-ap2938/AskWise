@@ -14,5 +14,15 @@ playwright-report/
 public/model-libs/*.wasm
 training/.venv/
 training/output/
+training/__pycache__/
 training/data/*.jsonl
+training/data/raw/*.jsonl
+training/data/*.txt
 !training/data/.gitkeep
+!training/data/raw/parity_probe.json
+.askwise-conflict-backup/
+MODE_SPEC.scratch.md
+tmp-*.mjs
+tmp-*.ts
+tmp-*.json
+tmp-*.log

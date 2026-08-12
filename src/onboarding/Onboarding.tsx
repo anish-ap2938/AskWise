@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { improveTier1 } from "../shared/improve";
 import { getRecipe } from "../shared/recipes";
-import type { OnDeviceProgress } from "../shared/ondeviceModel";
+import type { ScoreResult } from "../shared/types";
+import {
+  ONDEVICE_MODELS,
+  type OnDeviceProgress,
+} from "../shared/ondeviceModel";
+import { DownloadIcon, ExternalIcon, ProgressBar, StatusPill, type StatusTone } from "../options/ui";
 
 const DEMO_PROMPT = "i want to build and app for fitness";
 
@@ -11,6 +16,69 @@ const EXAMPLES = [
   "write an email to my boss asking for a raise",
   "my page is slow and takes 8 seconds to load",
 ];
+
+const SITES = ["ChatGPT", "Claude", "Gemini", "Perplexity", "DeepSeek", "Copilot"];
+
+const STEPS = [
+  {
+    title: "Pin AskWise",
+    body: "Chrome hides new extensions behind the puzzle-piece icon. Pin it and the settings are one click away.",
+  },
+  {
+    title: "Open a chat and start typing",
+    body: "Past about eight characters, an Improve button appears in the corner of the composer with the current score of what you've written.",
+  },
+  {
+    title: "Pick a version, then Replace",
+    body: "Simple tightens what you wrote. Structured adds the sections a model actually uses. Replace swaps it into the composer, and Undo puts your original back.",
+  },
+];
+
+const BAND_TEXT: Record<ScoreResult["band"], string> = {
+  weak: "text-critical",
+  okay: "text-accent-ink",
+  strong: "text-positive",
+};
+
+const MODEL_STATUS: Record<OnDeviceProgress["status"], { tone: StatusTone; title: string }> = {
+  idle: { tone: "neutral", title: "Advanced rewrites need a one-time download" },
+  downloading: { tone: "working", title: "Downloading the Advanced model" },
+  ready: { tone: "ready", title: "Advanced rewrites are ready" },
+  error: { tone: "error", title: "The model download didn't finish" },
+  unsupported: { tone: "warn", title: "Advanced rewrites aren't available in this browser" },
+};
+
+type ModelInfo = (typeof ONDEVICE_MODELS)[number];
+
+const PILL_LABEL: Record<
+  OnDeviceProgress["status"],
+  (model: ModelInfo, progress: OnDeviceProgress | null) => string
+> = {
+  idle: (model) => `${model.approxSizeGb} GB`,
+  downloading: (_model, progress) => `${Math.round((progress?.progress ?? 0) * 100)}%`,
+  ready: () => "Ready",
+  error: () => "Stopped",
+  unsupported: () => "Unavailable",
+};
+
+function Wordmark() {
+  return (
+    <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-[-0.01em]">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="currentColor"
+        aria-hidden
+        focusable="false"
+        className="text-accent"
+      >
+        <path d="M9.1 1.4 3.3 8.7a.5.5 0 0 0 .39.81H7l-.9 4.9a.3.3 0 0 0 .53.24l5.8-7.3a.5.5 0 0 0-.39-.81H9l.63-4.15a.3.3 0 0 0-.53-.24Z" />
+      </svg>
+      AskWise
+    </span>
+  );
+}
 
 export function Onboarding() {
   const [text, setText] = useState(DEMO_PROMPT);
@@ -25,8 +93,6 @@ export function Onboarding() {
       });
     };
     refresh();
-    // Kick download if install listener hasn't finished yet.
-    chrome.runtime.sendMessage({ kind: "ENSURE_ONDEVICE" });
     const id = window.setInterval(refresh, 1200);
     const onStorage = (
       changes: Record<string, chrome.storage.StorageChange>,
@@ -45,7 +111,7 @@ export function Onboarding() {
 
   const result = useMemo(() => {
     const trimmed = text.trim();
-    if (trimmed.split(/\s+/).length < 3) return null;
+    if (trimmed.split(/\s+/).filter(Boolean).length < 3) return null;
     try {
       return improveTier1(trimmed, "chatgpt");
     } catch {
@@ -53,116 +119,249 @@ export function Onboarding() {
     }
   }, [text]);
 
+  const status = ondevice?.status ?? "idle";
+  const model =
+    ONDEVICE_MODELS.find((m) => m.id === ondevice?.model) ?? ONDEVICE_MODELS[0];
+  const modelStatus = MODEL_STATUS[status];
+
   return (
-    <div className="mx-auto max-w-3xl space-y-10 p-8">
-      <header className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">
-          <span className="text-violet-600">⚡ AskWise</span> is ready
-        </h1>
-        <p className="text-gray-600">
-          Grammarly for AI prompts — free, open source, and everything runs on your device.
+    <div className="mx-auto max-w-[920px] px-6 py-12">
+      <div className="flex items-center justify-between gap-4">
+        <Wordmark />
+        <button
+          type="button"
+          className="btn-quiet"
+          onClick={() => chrome.runtime.openOptionsPage()}
+        >
+          Settings
+        </button>
+      </div>
+
+      <header className="mt-10 max-w-prose">
+        <h1 className="text-3xl font-semibold tracking-[-0.025em]">AskWise is installed.</h1>
+        <p className="mt-3 text-lg text-ink-muted">
+          It puts an Improve button in the composer on {SITES.slice(0, -1).join(", ")}, and{" "}
+          {SITES.at(-1)}. Click it and you get your prompt rewritten into the shape those
+          models answer well — scored, so you can see what was missing.
+        </p>
+        <p className="mt-3 text-sm text-ink-faint">
+          Free, no account, and the rewriting happens on your machine.
         </p>
       </header>
 
-      <section className="rounded-2xl border border-violet-200 bg-violet-50/50 p-6">
-        <h2 className="mb-1 text-lg font-semibold">Try it right now</h2>
-        <p className="mb-3 text-sm text-gray-600">
-          Type a rough prompt (or click an example) and watch it transform — this is exactly
-          what happens on ChatGPT, Claude, Gemini, Perplexity, DeepSeek, and Copilot.
-        </p>
-        <div className="mb-3 flex flex-wrap gap-2">
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex}
-              type="button"
-              className="rounded-full border border-violet-300 bg-white px-3 py-1 text-xs text-violet-700 hover:bg-violet-100"
-              onClick={() => setText(ex)}
-            >
-              {ex.length > 42 ? ex.slice(0, 42) + "…" : ex}
-            </button>
-          ))}
+      <section className="mt-12">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+          <h2 className="text-lg font-semibold tracking-[-0.01em]">Try it here first</h2>
+          <p className="text-sm text-ink-faint">
+            This is the same rewrite engine the widget uses, running locally right now.
+          </p>
         </div>
-        <textarea
-          className="h-20 w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-violet-500 focus:outline-none"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type a rough prompt here…"
-        />
 
-        {result && (
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl font-bold text-red-600">{result.scoreBefore.total}</span>
-              <span className="text-lg text-gray-400">→</span>
-              <span className="text-2xl font-bold text-green-600">{result.scoreAfter.total}</span>
-              <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700">
-                {getRecipe(result.mode).label}
-                {result.subRecipe ? ` · ${result.subRecipe.label}` : ""}
-              </span>
-            </div>
-            <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg border border-gray-200 bg-white p-4 text-xs leading-relaxed">
-              {result.variants.structured}
-            </pre>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {EXAMPLES.map((ex) => {
+            const active = ex === text;
+            return (
+              <button
+                key={ex}
+                type="button"
+                aria-pressed={active}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  active
+                    ? "border-transparent bg-accent-soft text-accent-ink"
+                    : "border-hairline-strong text-ink-muted hover:bg-sunken hover:text-ink"
+                }`}
+                onClick={() => setText(ex)}
+              >
+                {ex.length > 40 ? `${ex.slice(0, 40)}…` : ex}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className="card flex flex-col p-4">
+            <label
+              className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint"
+              htmlFor="demo-input"
+            >
+              What you type
+            </label>
+            <textarea
+              id="demo-input"
+              className="mt-3 min-h-[96px] flex-1 resize-y rounded-md border border-hairline-strong bg-surface p-3 text-sm text-ink placeholder:text-ink-faint"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Type the way you actually type — typos included."
+            />
+            {result && (
+              <div className="mt-3">
+                <p className="flex items-baseline gap-1.5 text-sm text-ink-muted">
+                  <span
+                    className={`text-xl font-semibold ${BAND_TEXT[result.scoreBefore.band]}`}
+                  >
+                    {result.scoreBefore.total}
+                  </span>
+                  <span>/ 100</span>
+                </p>
+                {result.scoreBefore.missing.length > 0 ? (
+                  <ul className="mt-2 space-y-1">
+                    {result.scoreBefore.missing.slice(0, 3).map((m) => (
+                      <li key={m} className="flex gap-2 text-xs text-ink-muted">
+                        <span
+                          aria-hidden
+                          className="mt-[7px] h-1 w-1 flex-none rounded-full bg-critical"
+                        />
+                        {m}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-xs text-ink-faint">
+                    Nothing obvious missing — the rewrite will mostly tidy the phrasing.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
+
+          <div className="card flex flex-col bg-sunken p-4">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">
+                What AskWise sends
+              </span>
+              {result && (
+                <span className="tag">
+                  {getRecipe(result.mode).label}
+                  {result.subRecipe ? ` · ${result.subRecipe.label}` : ""}
+                </span>
+              )}
+            </div>
+
+            {result ? (
+              <>
+                <p className="mt-3 flex items-baseline gap-2 text-sm text-ink-muted">
+                  <span className={`text-xl font-semibold ${BAND_TEXT[result.scoreAfter.band]}`}>
+                    {result.scoreAfter.total}
+                  </span>
+                  <span>/ 100</span>
+                  {result.scoreAfter.total > result.scoreBefore.total && (
+                    <span className="text-positive">
+                      +{result.scoreAfter.total - result.scoreBefore.total}
+                    </span>
+                  )}
+                </p>
+                <pre className="mt-3 max-h-72 flex-1 overflow-y-auto whitespace-pre-wrap rounded-md border border-hairline bg-surface p-3 text-xs leading-relaxed text-ink">
+                  {result.variants.structured}
+                </pre>
+              </>
+            ) : (
+              <p className="mt-3 flex-1 text-sm text-ink-faint">
+                Write at least three words on the left and the structured rewrite shows up
+                here.
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-14">
+        <h2 className="text-lg font-semibold tracking-[-0.01em]">Then, on any chat site</h2>
+        <ol className="mt-4 divide-y divide-hairline border-y border-hairline">
+          {STEPS.map((step, i) => (
+            <li key={step.title} className="flex gap-4 py-4">
+              <span className="mt-0.5 flex-none text-sm font-medium tabular-nums text-ink-faint">
+                {i + 1}
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-medium">{step.title}</h3>
+                <p className="mt-1 max-w-prose text-sm text-ink-muted">{step.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="card mt-14 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-base font-semibold">{modelStatus.title}</h2>
+              <StatusPill tone={modelStatus.tone}>{PILL_LABEL[status](model, ondevice)}</StatusPill>
+            </div>
+            <p className="mt-2 max-w-prose text-sm text-ink-muted">
+              Simple and Structured rewrites are templates and work offline from the start.
+              The Advanced tab and Refine chat use a language model that runs in your
+              browser, which means downloading {model.approxSizeGb} GB once. Nothing you
+              type is uploaded to run it.
+            </p>
+          </div>
+
+          {(status === "idle" || status === "error") && (
+            <button
+              type="button"
+              className="btn btn-primary flex-none"
+              onClick={() =>
+                chrome.runtime.sendMessage({ kind: "ENSURE_ONDEVICE" }, (response) => {
+                  if (response?.kind === "ONDEVICE_STATUS") {
+                    setOndevice(response.payload as OnDeviceProgress);
+                  }
+                })
+              }
+            >
+              <DownloadIcon />
+              {status === "error" ? "Try again" : "Download now"}
+            </button>
+          )}
+        </div>
+
+        {status === "downloading" && (
+          <div className="mt-4 space-y-2">
+            <ProgressBar
+              value={ondevice?.progress ?? 0}
+              label={`${model.label} download`}
+            />
+            <p className="text-xs text-ink-faint">
+              {ondevice?.text || "Starting…"} — you can close this tab, it keeps going.
+            </p>
+          </div>
+        )}
+
+        {status === "error" && ondevice?.error && (
+          <p className="mt-4 rounded-md bg-critical-soft px-3 py-2 text-xs text-critical">
+            {ondevice.error}
+          </p>
         )}
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        {[
-          {
-            step: "1",
-            title: "Pin the extension",
-            body: "Click the puzzle icon in Chrome's toolbar and pin AskWise so it's always a click away.",
-          },
-          {
-            step: "2",
-            title: "Open your AI chat",
-            body: "Go to ChatGPT, Claude, Gemini, Perplexity, DeepSeek, or Copilot and start typing a prompt (8+ words).",
-          },
-          {
-            step: "3",
-            title: "Click ⚡ Improve",
-            body: "The pill appears near the composer. Pick Simple, Structured, or Advanced and hit Replace.",
-          },
-        ].map((s) => (
-          <div key={s.step} className="rounded-xl border border-gray-200 p-4">
-            <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white">
-              {s.step}
-            </div>
-            <h3 className="mb-1 text-sm font-semibold">{s.title}</h3>
-            <p className="text-xs text-gray-600">{s.body}</p>
-          </div>
-        ))}
-      </section>
-
-      <section className="rounded-xl border border-violet-200 bg-violet-50/40 p-5 space-y-3">
-        <h2 className="text-base font-semibold">Downloading on-device AI…</h2>
-        <p className="text-sm text-gray-600">
-          A ~1.9 GB private model is downloading into your browser for Advanced rewrites.
-          Instant Simple/Structured rewrites already work — no wait needed.
-        </p>
-        <div className="h-2 overflow-hidden rounded-full bg-white">
-          <div
-            className="h-full bg-violet-600 transition-all"
-            style={{ width: `${Math.round((ondevice?.progress ?? 0) * 100)}%` }}
-          />
-        </div>
-        <p className="text-xs text-gray-600">
-          {ondevice?.status === "ready"
-            ? "Model ready — Advanced rewrites will run on your PC."
-            : ondevice?.text || "Starting download…"}
-        </p>
+      <footer className="mt-14 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-hairline pt-6 text-xs text-ink-faint">
+        <span>
+          Shortcut: <span className="kbd">Alt</span> <span className="kbd">I</span>
+        </span>
         <button
           type="button"
-          className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white"
+          className="text-ink-muted underline decoration-hairline-strong underline-offset-2 hover:text-ink hover:decoration-ink"
           onClick={() => chrome.runtime.openOptionsPage()}
         >
-          Model settings
+          Settings
         </button>
-      </section>
-
-      <footer className="text-center text-xs text-gray-400">
-        No account. No tracking. No data leaves your device. MIT-licensed open source.
+        <a
+          className="inline-flex items-center gap-1 text-ink-muted underline decoration-hairline-strong underline-offset-2 hover:text-ink hover:decoration-ink"
+          href="https://askwise-privacy.vercel.app/privacy-policy"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Privacy policy
+          <ExternalIcon />
+        </a>
+        <a
+          className="inline-flex items-center gap-1 text-ink-muted underline decoration-hairline-strong underline-offset-2 hover:text-ink hover:decoration-ink"
+          href="https://github.com/anish-ap2938/AskWise"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Source, MIT
+          <ExternalIcon />
+        </a>
       </footer>
     </div>
   );

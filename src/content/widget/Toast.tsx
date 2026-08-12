@@ -1,21 +1,38 @@
+import { CloseIcon } from "./Icons";
+
 interface ToastProps {
   message: string;
   actionLabel?: string;
   onAction?: () => void;
+  onDismiss: () => void;
   visible: boolean;
 }
 
-export function Toast({ message, actionLabel, onAction, visible }: ToastProps) {
+export function Toast({
+  message,
+  actionLabel,
+  onAction,
+  onDismiss,
+  visible,
+}: ToastProps) {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 z-[2147483647] -translate-x-1/2 rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white shadow-xl">
-      <span>{message}</span>
+    <div className="aw-toast" role="status" aria-live="polite">
+      <span className="aw-grow">{message}</span>
       {actionLabel && onAction && (
-        <button type="button" className="ml-3 font-semibold text-violet-300" onClick={onAction}>
+        <button type="button" className="aw-toast-action" onClick={onAction}>
           {actionLabel}
         </button>
       )}
+      <button
+        type="button"
+        className="aw-toast-close"
+        aria-label="Dismiss"
+        onClick={onDismiss}
+      >
+        <CloseIcon size={12} />
+      </button>
     </div>
   );
 }

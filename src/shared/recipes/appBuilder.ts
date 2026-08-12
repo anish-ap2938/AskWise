@@ -51,7 +51,7 @@ Start by asking me the 2-3 most important questions about who this is for and wh
 4. Risks that kill the wedge if ignored.
 5. Build sequence with "done when" checks.
 
-No feature code until I greenlight the wedge.`;
+**Constraints:** assume a solo builder shipping to real users, not a team with a quarter. No feature code until I greenlight the wedge, no auth/billing/admin in the wedge unless the product is meaningless without it, and cap the wedge at 5 user-facing screens.`;
 
     const structuredSpecFirst = `Turn this into an implementation-ready product spec, then stop for approval:
 
@@ -65,7 +65,7 @@ D. Screens (wireframe-level list)
 E. ${stackLine}
 F. Milestone 1 acceptance tests I can run without reading code
 
-Push back if this should be a landing page or spreadsheet instead of an app.`;
+**Constraints:** write it for a solo builder, happy path only — no error states, no admin panel, no scale planning. Must fit one page; avoid framework debates. Push back if this should be a landing page or spreadsheet instead of an app.`;
 
     const structured = [structuredOfficeHours, structuredJobStory, structuredSpecFirst][idx];
 

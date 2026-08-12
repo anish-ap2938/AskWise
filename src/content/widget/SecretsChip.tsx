@@ -1,4 +1,5 @@
 import type { RedactionMatch } from "../../shared/types";
+import { AlertIcon, ChevronIcon } from "./Icons";
 
 interface SecretsChipProps {
   matches: RedactionMatch[];
@@ -15,15 +16,32 @@ export function SecretsChip({ matches, expanded, onToggle }: SecretsChipProps) {
   if (matches.length === 0) return null;
 
   return (
-    <div className="px-4 py-2 border-b border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
-      <button type="button" className="text-xs font-medium text-red-700 dark:text-red-300" onClick={onToggle}>
-        {matches.length} secret{matches.length > 1 ? "s" : ""} will be redacted
+    <div className="aw-secrets">
+      <button
+        type="button"
+        className="aw-secrets-toggle"
+        onClick={onToggle}
+        aria-expanded={expanded}
+        aria-controls="aw-secrets-list"
+      >
+        <AlertIcon />
+        <span className="aw-grow">
+          {matches.length} secret{matches.length > 1 ? "s" : ""} found
+        </span>
+        <ChevronIcon
+          style={{ transform: expanded ? "rotate(180deg)" : undefined }}
+        />
       </button>
+      <p className="aw-secrets-note">
+        Redacted before the on-device model reads your prompt. They stay in the
+        text you send to the chat, so remove them yourself if that matters.
+      </p>
       {expanded && (
-        <ul className="mt-1 space-y-1 text-xs text-red-600 dark:text-red-400">
+        <ul id="aw-secrets-list" className="aw-secrets-list">
           {matches.map((m, i) => (
             <li key={i}>
-              {m.type}: {maskSecret(m.original)}
+              <span className="aw-secrets-type">{m.type}:</span>{" "}
+              {maskSecret(m.original)}
             </li>
           ))}
         </ul>

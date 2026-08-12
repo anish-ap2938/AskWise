@@ -1,14 +1,20 @@
-# Python 3.11+ recommended. Install a CUDA build of torch that matches your driver:
-#   https://pytorch.org/get-started/locally/
+# Install CUDA torch FIRST (RTX 50-series / Blackwell needs cu128+):
+#   pip install torch --index-url https://download.pytorch.org/whl/cu128
+# Then:
+#   pip install -r requirements.txt
 #
-# RTX 50-series (Blackwell) may need a recent PyTorch nightly/CUDA 12.8+ wheel.
-torch>=2.4.0
+# MLC convert on Windows: also install wheels from https://mlc.ai/wheels
+# and keep numpy<2 (TVM float16 bug with numpy 2.x).
+#
+# Python 3.11–3.12 recommended on Windows.
+
+numpy>=1.26.0,<2
 transformers>=4.46.0
 datasets>=3.0.0
 accelerate>=1.0.0
 peft>=0.13.0
 trl>=0.12.0
-bitsandbytes>=0.44.0
+bitsandbytes>=0.45.0
 sentencepiece>=0.2.0
 protobuf>=5.0.0
 pyyaml>=6.0

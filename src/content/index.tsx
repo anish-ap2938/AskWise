@@ -1,6 +1,11 @@
 import { createRoot } from "react-dom/client";
 import { pickAdapter } from "./adapters";
-import { WidgetApp } from "./widget/WidgetApp";
+import { loadIntentModel } from "../shared/intentModel";
+import {
+  DEFAULT_WIDGET_SETTINGS,
+  WidgetApp,
+  type WidgetSettings,
+} from "./widget/WidgetApp";
 import styles from "./widget/styles.css?inline";
 
 const LOG_PREFIX = "[AskWise]";
@@ -8,28 +13,50 @@ const HOST_TAG = "askwise-root";
 const STORAGE_KEY = "askwise";
 const LEGACY_STORAGE_KEY = "promptpilot";
 
-async function getSettings(): Promise<{ enabled: boolean }> {
+type StoredSettings = {
+  enabledSites?: Record<string, boolean>;
+  defaultVariant?: WidgetSettings["defaultVariant"];
+  targetModelOverride?: WidgetSettings["targetModelOverride"];
+};
+
+function toWidgetSettings(stored: StoredSettings | undefined): WidgetSettings {
+  return {
+    defaultVariant: stored?.defaultVariant ?? DEFAULT_WIDGET_SETTINGS.defaultVariant,
+    targetModelOverride:
+      stored?.targetModelOverride ?? DEFAULT_WIDGET_SETTINGS.targetModelOverride,
+  };
+}
+
+async function getSettings(): Promise<{
+  enabled: boolean;
+  widget: WidgetSettings;
+}> {
+  const fallback = { enabled: true, widget: DEFAULT_WIDGET_SETTINGS };
+
   return new Promise((resolve) => {
     const timeout = setTimeout(() => {
       console.warn(`${LOG_PREFIX} settings timeout — defaulting to enabled`);
-      resolve({ enabled: true });
+      resolve(fallback);
     }, 1500);
 
     try {
       chrome.runtime.sendMessage({ kind: "GET_SETTINGS" }, (response) => {
         clearTimeout(timeout);
         if (chrome.runtime.lastError || !response?.payload) {
-          resolve({ enabled: true });
+          resolve(fallback);
           return;
         }
+        const stored = response.payload as StoredSettings;
         const adapter = pickAdapter();
         const siteKey = adapter.id === "generic" ? "chatgpt" : adapter.id;
-        const enabled = response.payload.enabledSites?.[siteKey] ?? true;
-        resolve({ enabled });
+        resolve({
+          enabled: stored.enabledSites?.[siteKey] ?? true,
+          widget: toWidgetSettings(stored),
+        });
       });
     } catch {
       clearTimeout(timeout);
-      resolve({ enabled: true });
+      resolve(fallback);
     }
   });
 }
@@ -45,7 +72,12 @@ async function bootstrap(): Promise<void> {
   const adapter = pickAdapter();
   console.log(`${LOG_PREFIX} adapter:`, adapter.id);
 
-  const { enabled } = await getSettings();
+  // Warm the intent classifier; rules cover us until it resolves.
+  void loadIntentModel().then((ok) => {
+    if (!ok) console.warn(`${LOG_PREFIX} intent model unavailable — using rules only`);
+  });
+
+  const { enabled, widget } = await getSettings();
   if (!enabled) {
     console.log(`${LOG_PREFIX} disabled for this site`);
     return;
@@ -64,18 +96,22 @@ async function bootstrap(): Promise<void> {
   shadow.appendChild(container);
 
   const root = createRoot(container);
-  root.render(<WidgetApp adapter={adapter} enabled={enabled} />);
+  root.render(<WidgetApp adapter={adapter} enabled={enabled} settings={widget} />);
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     const change = changes[STORAGE_KEY] ?? changes[LEGACY_STORAGE_KEY];
     if (!change) return;
-    const next = change.newValue as
-      | { settings?: { enabledSites?: Record<string, boolean> } }
-      | undefined;
+    const next = change.newValue as { settings?: StoredSettings } | undefined;
     const siteKey = adapter.id === "generic" ? "chatgpt" : adapter.id;
     const newEnabled = next?.settings?.enabledSites?.[siteKey] ?? true;
-    root.render(<WidgetApp adapter={adapter} enabled={newEnabled} />);
+    root.render(
+      <WidgetApp
+        adapter={adapter}
+        enabled={newEnabled}
+        settings={toWidgetSettings(next?.settings)}
+      />
+    );
     if (!newEnabled) host.remove();
   });
 

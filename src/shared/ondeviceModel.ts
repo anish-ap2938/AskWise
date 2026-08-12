@@ -5,33 +5,40 @@ import {
   askwiseFtConfigured,
 } from "./askwiseFtModel";
 
+/**
+ * `label` and `description` are shown to users in the options page, so they
+ * describe the trade-off (download size, speed, quality) rather than the
+ * training provenance.
+ */
 const BASE_MODELS = [
   {
     id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
-    label: "Llama 3.2 1B (fast stock)",
+    label: "Llama 3.2 1B",
     approxSizeGb: 0.7,
-    description: "Stock MLC model — fastest generic option before your fine-tune is published.",
+    description:
+      "Smallest download and the quickest to answer. Pick this on an older laptop or a slow connection.",
   },
   {
     id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 1.5B (stock base for FT)",
+    label: "Qwen2.5 1.5B",
     approxSizeGb: 1.0,
-    description: "Same family as the AskWise fine-tune. Use while training / before HF publish.",
+    description: "General-purpose model. A middle ground between speed and rewrite quality.",
   },
   {
     id: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
-    label: "Qwen2.5 3B (highest quality stock)",
+    label: "Qwen2.5 3B",
     approxSizeGb: 1.9,
-    description: "Slowest stock option. Prefer the fine-tuned 1.5B once published.",
+    description:
+      "Best rewrites of the general models, and the slowest to load and to generate.",
   },
 ] as const;
 
 const FT_MODEL = {
   id: ASKWISE_FT_MODEL_ID,
-  label: "AskWise fine-tuned 1.5B (recommended)",
+  label: "AskWise 1.5B (recommended)",
   approxSizeGb: 1.0,
   description:
-    "Your LoRA-trained prompt engineer, MLC weights from Hugging Face + packaged WebGPU wasm.",
+    "Trained specifically on prompt rewriting, so it follows the structure for each mode more closely than a general model of the same size.",
 } as const;
 
 export const ONDEVICE_MODELS = askwiseFtConfigured()

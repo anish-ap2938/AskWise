@@ -138,6 +138,15 @@ const MODE_WEIGHT_OVERRIDES: Partial<Record<ModeId, Partial<Record<string, numbe
   quick_improve: { right_sized: 10 },
   coding_debug: { context: 25, audience_tone: 0 }, // pasted code is what matters
   app_builder: { specificity: 25, output_format: 10 },
+  learning: { audience_tone: 15, success_criteria: 15, specificity: 10 },
+  planning: { constraints: 20, specificity: 15, audience_tone: 5 },
+  marketing: { audience_tone: 20, success_criteria: 15, specificity: 15 },
+  business: { specificity: 25, success_criteria: 15, audience_tone: 5 },
+  finance: { context: 20, specificity: 25, audience_tone: 5 },
+  health: { context: 25, constraints: 15, audience_tone: 5 },
+  math_help: { context: 20, success_criteria: 15, audience_tone: 0 },
+  translation: { audience_tone: 20, context: 20, success_criteria: 5 },
+  image_gen: { specificity: 25, constraints: 15, context: 10, audience_tone: 5 },
 };
 
 function getBand(total: number): ScoreResult["band"] {

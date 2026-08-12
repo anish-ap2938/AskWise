@@ -17,7 +17,11 @@ ${expertHowToAnswerBlock()}`;
 1. Bottom line in 2 sentences.
 2. The 3 levers that matter most for this ask.
 3. What to ignore / common traps.
-4. One concrete next action I can take in <30 minutes.`;
+4. One concrete next action I can take in <30 minutes.
+
+**Constraints:** assume I'm capable but new to this specific problem; state assumptions rather than asking me to fill blanks; no generic advice I could have guessed; under 400 words.
+
+**Done means:** I know what to do next and why the other options lost.`;
     case 2:
       return `I need expert help with: ${request}
 
@@ -25,7 +29,9 @@ Treat this like a consult:
 - Diagnose what I'm actually trying to achieve (push back if my ask is the wrong framing).
 - Give the recommended path first, alternatives second.
 - Call out trade-offs and the single risk most likely to bite me.
-- End with a checklist I can tick to know I'm done.`;
+- End with a checklist I can tick to know I'm done.
+
+**Constraints:** commit to one recommendation — no "it depends" without saying what it depends on and picking a default; flag anything you're genuinely unsure about; keep it under 400 words.`;
     default:
       return `Goal: ${request}
 
@@ -34,7 +40,9 @@ Respond in this contract:
 **Task** — what "done" looks like.
 **Constraints** — hard limits, safety, or quality bars.
 **Output** — exact format I should receive (bullets / steps / table / draft).
-Then deliver that output.`;
+Then deliver that output.
+
+**Ground rules:** write for someone capable but new to this specific problem; fill gaps with stated assumptions rather than asking me to; skip the preamble and the recap of my question; keep it under 400 words.`;
   }
 }
 

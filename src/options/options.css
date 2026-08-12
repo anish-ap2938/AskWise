@@ -2,6 +2,187 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gray-50 text-gray-900 min-h-screen;
+/*
+ * Palette shared with the in-page widget (src/content/widget/styles.css) so the
+ * extension reads as one product. One accent (amber, from the icon); the primary
+ * action is ink rather than a brand colour so it stays legible in both schemes.
+ */
+:root {
+  color-scheme: light dark;
+
+  --surface: #ffffff;
+  --sunken: #f5f6f8;
+  --raised: #ffffff;
+  --hairline: #e3e6ec;
+  --hairline-strong: #c9ced8;
+
+  --ink: #14181f;
+  --ink-muted: #4d5462;
+  --ink-faint: #6b7280;
+
+  --accent: #e0930b;
+  --accent-ink: #8a5300;
+  --accent-soft: #fdf3e0;
+
+  --positive: #0f7a45;
+  --positive-soft: #e4f4ea;
+  --critical: #b3261e;
+  --critical-soft: #fdeceb;
+
+  --primary: #171b23;
+  --primary-hover: #2a313d;
+  --primary-ink: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #12151a;
+    --sunken: #1a1e25;
+    --raised: #171a20;
+    --hairline: #2c313b;
+    --hairline-strong: #3d444f;
+
+    --ink: #eef1f6;
+    --ink-muted: #a9b1bd;
+    --ink-faint: #8b939f;
+
+    --accent: #f2b23b;
+    --accent-ink: #f4c063;
+    --accent-soft: rgba(242, 178, 59, 0.14);
+
+    --positive: #5ed49a;
+    --positive-soft: rgba(94, 212, 154, 0.14);
+    --critical: #ff9d94;
+    --critical-soft: rgba(255, 107, 94, 0.12);
+
+    --primary: #eef1f6;
+    --primary-hover: #ffffff;
+    --primary-ink: #14181f;
+  }
+}
+
+@layer base {
+  html {
+    background: var(--surface);
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+      sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Amber is too low-contrast for a focus ring on white, so rings use ink and
+     flip to the accent in dark mode where ink is the light colour. */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  code,
+  kbd {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+      monospace;
+    font-size: 0.9em;
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--primary);
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border border-hairline bg-raised;
+  }
+
+  .field-label {
+    @apply block text-sm font-medium text-ink;
+  }
+
+  .field-hint {
+    @apply mt-1.5 block text-xs text-ink-faint;
+  }
+
+  .control {
+    @apply h-9 w-full rounded-md border border-hairline-strong bg-surface px-3 text-sm text-ink;
+    transition: border-color 140ms cubic-bezier(0.2, 0.6, 0.25, 1);
+  }
+
+  .control:hover {
+    @apply border-ink-faint;
+  }
+
+  .btn {
+    @apply inline-flex h-9 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium;
+    transition:
+      background-color 140ms cubic-bezier(0.2, 0.6, 0.25, 1),
+      border-color 140ms cubic-bezier(0.2, 0.6, 0.25, 1),
+      color 140ms cubic-bezier(0.2, 0.6, 0.25, 1);
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-ink;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-primary-hover;
+  }
+
+  .btn-secondary {
+    @apply border border-hairline-strong bg-surface text-ink;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    @apply bg-sunken;
+  }
+
+  .btn:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  .btn-quiet {
+    @apply -mx-2 inline-flex h-7 items-center rounded-sm px-2 text-sm text-ink-muted;
+    transition:
+      background-color 140ms cubic-bezier(0.2, 0.6, 0.25, 1),
+      color 140ms cubic-bezier(0.2, 0.6, 0.25, 1);
+  }
+
+  .btn-quiet:hover {
+    @apply bg-sunken text-ink;
+  }
+
+  .btn-quiet-danger:hover {
+    background: var(--critical-soft);
+    color: var(--critical);
+  }
+
+  .tag {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-sunken px-2 py-0.5 text-xs font-medium text-ink-muted;
+  }
+
+  .kbd {
+    @apply rounded-sm border border-hairline bg-sunken px-1.5 py-0.5 text-xs font-medium text-ink-muted;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
 }

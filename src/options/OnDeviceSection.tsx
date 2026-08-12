@@ -5,11 +5,46 @@ import {
   type OnDeviceModelId,
   type OnDeviceProgress,
 } from "../shared/ondeviceModel";
+import { DownloadIcon, ProgressBar, Section, StatusPill, type StatusTone } from "./ui";
 
 interface Props {
   storage: StorageSchema;
   onPersist: (next: StorageSchema) => void;
 }
+
+const STATUS_COPY: Record<
+  OnDeviceProgress["status"],
+  { tone: StatusTone; label: string; detail: string }
+> = {
+  idle: {
+    tone: "neutral",
+    label: "Not downloaded",
+    detail:
+      "Simple and Structured rewrites already work. Download the model when you want Advanced and Refine.",
+  },
+  downloading: {
+    tone: "working",
+    label: "Downloading",
+    detail:
+      "You can keep browsing. The download resumes if you close the tab, and it only happens once per model.",
+  },
+  ready: {
+    tone: "ready",
+    label: "Ready",
+    detail: "Advanced rewrites and Refine now run on this device.",
+  },
+  error: {
+    tone: "error",
+    label: "Download failed",
+    detail: "Usually a dropped connection or a full disk. Try again below.",
+  },
+  unsupported: {
+    tone: "warn",
+    label: "Not supported here",
+    detail:
+      "Advanced and Refine need WebGPU (Chrome 113 or newer, with hardware acceleration on). Simple and Structured are unaffected.",
+  },
+};
 
 export function OnDeviceSection({ storage, onPersist }: Props) {
   const [progress, setProgress] = useState<OnDeviceProgress | null>(null);
@@ -54,76 +89,93 @@ export function OnDeviceSection({ storage, onPersist }: Props) {
     );
   };
 
-  const pct = Math.round((progress?.progress ?? 0) * 100);
   const status = progress?.status ?? "idle";
+  const copy = STATUS_COPY[status];
+  const selected =
+    ONDEVICE_MODELS.find((m) => m.id === storage.providers.ondevice.model) ??
+    ONDEVICE_MODELS[0];
+  const pct = Math.round((progress?.progress ?? 0) * 100);
+  const downloading = status === "downloading";
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-lg font-semibold">On-device AI</h2>
-      <p className="text-sm text-gray-600">
-        AskWise uses this browser model for every Advanced rewrite and Refine request.
-        It downloads once (about 0.7–2 GB), then runs privately on your device via WebGPU.
-        Simple and Structured remain instant local templates. To ship a fine-tuned model,
-        train locally (see <code>training/README.md</code>), publish MLC weights to Hugging
-        Face, then set <code>ASKWISE_FT_HF_REPO</code> and rebuild.
-      </p>
-
-      <label className="block">
-        <span className="text-sm text-gray-600">Model</span>
-        <select
-          className="mt-1 block w-full rounded border px-3 py-2"
-          value={storage.providers.ondevice.model}
-          onChange={(e) =>
-            onPersist({
-              ...storage,
-              providers: {
-                ...storage.providers,
-                ondevice: {
-                  ...storage.providers.ondevice,
-                  model: e.target.value as OnDeviceModelId,
+    <Section
+      title="Advanced rewrites"
+      description={
+        <>
+          Simple and Structured are template rewrites — instant, offline, no download.
+          Advanced and Refine are written by a language model that runs inside your
+          browser, so the model file has to be fetched once ({selected.approxSizeGb} GB)
+          and is then cached.
+        </>
+      }
+    >
+      <div className="card divide-y divide-hairline">
+        <label className="block px-4 py-4">
+          <span className="field-label">Model</span>
+          <select
+            className="control mt-2"
+            value={storage.providers.ondevice.model}
+            onChange={(e) =>
+              onPersist({
+                ...storage,
+                providers: {
+                  ...storage.providers,
+                  ondevice: {
+                    ...storage.providers.ondevice,
+                    model: e.target.value as OnDeviceModelId,
+                  },
                 },
-              },
-            })
-          }
-        >
-          {ONDEVICE_MODELS.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.label} (~{m.approxSizeGb} GB)
-            </option>
-          ))}
-        </select>
-      </label>
+              })
+            }
+          >
+            {ONDEVICE_MODELS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label} — {m.approxSizeGb} GB
+              </option>
+            ))}
+          </select>
+          <span className="field-hint">{selected.description}</span>
+        </label>
 
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-medium capitalize">{status.replace("_", " ")}</span>
-          <span className="text-gray-500">{pct}%</span>
+        <div className="space-y-3 px-4 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <StatusPill tone={copy.tone}>
+              {copy.label}
+              {downloading && ` · ${pct}%`}
+            </StatusPill>
+            {status !== "unsupported" && (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={download}
+                disabled={downloading}
+              >
+                <DownloadIcon />
+                {status === "ready" ? "Re-download" : downloading ? "Downloading…" : "Download"}
+              </button>
+            )}
+          </div>
+
+          {(downloading || status === "ready") && (
+            <ProgressBar
+              value={progress?.progress ?? 0}
+              tone={status === "ready" ? "positive" : "neutral"}
+              label={`${selected.label} download`}
+            />
+          )}
+
+          <p className="text-xs text-ink-muted">{copy.detail}</p>
+
+          {progress?.error && (
+            <p className="rounded-md bg-critical-soft px-3 py-2 text-xs text-critical">
+              {progress.error}
+            </p>
+          )}
+          {downloading && progress?.text && (
+            <p className="break-words text-xs text-ink-faint">{progress.text}</p>
+          )}
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-          <div
-            className="h-full bg-violet-600 transition-all"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        {progress?.text && (
-          <p className="text-xs text-gray-600 break-words">{progress.text}</p>
-        )}
-        {status === "unsupported" && (
-          <p className="text-xs text-amber-700">
-            Advanced and Refine need Chrome 113+ with WebGPU. Simple and Structured
-            continue to work without WebGPU.
-          </p>
-        )}
       </div>
-
-      <button
-        type="button"
-        className="rounded bg-violet-600 px-4 py-2 text-white text-sm disabled:opacity-50"
-        onClick={download}
-        disabled={status === "downloading"}
-      >
-        {status === "ready" ? "Reload model" : "Download / resume model"}
-      </button>
-    </section>
+    </Section>
   );
 }

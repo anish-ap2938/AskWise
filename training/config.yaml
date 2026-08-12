@@ -5,17 +5,17 @@ base_model: Qwen/Qwen2.5-1.5B-Instruct
 output_name: AskWise-PromptEngineer-1.5B
 
 # Hugging Face destination for MLC weights (edit before push)
-hf_repo: YOUR_HF_USER/AskWise-PromptEngineer-1.5B-q4f16_1-MLC
+hf_repo: anipanii/AskWise-PromptEngineer-1.5B-q4f16_1-MLC
 
-# Training
+# Training (GPU required — 03_train_lora.py refuses CPU)
 max_seq_len: 1536
 lora_r: 16
 lora_alpha: 32
 lora_dropout: 0.05
 learning_rate: 2.0e-4
-num_train_epochs: 2
-per_device_train_batch_size: 2
-gradient_accumulation_steps: 8
+num_train_epochs: 3
+per_device_train_batch_size: 4
+gradient_accumulation_steps: 4
 warmup_ratio: 0.03
 weight_decay: 0.01
 bf16: true
@@ -24,6 +24,7 @@ load_in_4bit: true
 
 # Paths (relative to training/)
 seed_jsonl: data/seed_sft.jsonl
+prompt_jsonl: data/prompt_sft.jsonl
 train_jsonl: data/train_sft.jsonl
 adapter_dir: output/lora_adapter
 merged_dir: output/merged_hf

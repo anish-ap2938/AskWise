@@ -3,8 +3,8 @@ import type { SubRecipeDef } from "../types";
 /** STEM explainers / methods / literature — evidence-first. */
 export const sciencePack: SubRecipeDef[] = [
   {
-    id: "quick_improve/science_explain",
-    parent: "quick_improve",
+    id: "learning/science_explain",
+    parent: "learning",
     label: "Science Explain",
     triggers: [
       "\\b(quantum|photosynthesis|krebs|mitosis|relativity|entropy|stoichiometr|organic chemistry|thermodynamics|genetics|dna|rna|neuron|black hole|periodic table)\\b",
@@ -35,6 +35,7 @@ export const sciencePack: SubRecipeDef[] = [
     label: "Scientific Literature",
     triggers: [
       "\\b(literature review|systematic review|meta[- ]analysis|peer[- ]reviewed|pubmed|arxiv)\\b",
+      "\\bliterature on\\b",
       "(papers|studies|evidence).{0,30}(on|about|for)",
       "state of (the )?(research|science|evidence)",
     ],

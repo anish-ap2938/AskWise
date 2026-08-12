@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <style>
+    .frame { stroke: #1b1b19; }
+    .accent { stroke: #a62b1f; }
+    @media (prefers-color-scheme: dark) {
+      .frame { stroke: #edeae3; }
+      .accent { stroke: #ef8f78; }
+    }
+  </style>
+  <rect class="frame" x="2.9" y="2.9" width="18.2" height="18.2" rx="5.4" fill="none" stroke-width="1.6" />
+  <path class="frame" d="M8.4 9.2 11.4 12l-3 2.8" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+  <path class="accent" d="M13.2 15.1h3.3" fill="none" stroke-width="1.6" stroke-linecap="round" />
+</svg>

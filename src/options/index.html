@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AskWise Options</title>
+    <!-- Background comes from options.css, which Vite links in <head>. Do not add an
+         inline <style> here: @crxjs rewrites inline blocks and drops the entry script
+         from the dev server, which blanks the page and the screenshot capture. -->
+    <meta name="color-scheme" content="light dark" />
+    <title>AskWise settings</title>
   </head>
   <body>
     <div id="root"></div>

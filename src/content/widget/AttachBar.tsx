@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import type { Attachment } from "../../shared/attachment";
 import { MAX_ATTACHMENTS } from "../../shared/attachment";
 import { ACCEPTED_EXTENSIONS, readFileToAttachment } from "../attachments";
+import { CloseIcon, PaperclipIcon } from "./Icons";
 
 interface AttachBarProps {
   attachments: Attachment[];
@@ -23,7 +24,7 @@ export function AttachBar({ attachments, onAdd, onRemove, onError }: AttachBarPr
         onAdd(await readFileToAttachment(file));
       }
       if (files.length > room) {
-        onError(`Max ${MAX_ATTACHMENTS} files — extra files were skipped.`);
+        onError(`AskWise takes ${MAX_ATTACHMENTS} files at a time — the rest were skipped.`);
       }
     } catch (err) {
       onError(err instanceof Error ? err.message : "Couldn't read that file.");
@@ -34,48 +35,49 @@ export function AttachBar({ attachments, onAdd, onRemove, onError }: AttachBarPr
   };
 
   return (
-    <div className="border-t border-zinc-200 px-4 py-2 dark:border-zinc-700">
-      <div className="flex flex-wrap items-center gap-1.5">
+    <div className="aw-attach">
+      <div className="aw-attach-list">
         {attachments.map((a) => (
           <span
             key={a.id}
-            className="inline-flex max-w-full items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800"
+            className="aw-attach-chip"
             title={
               `${a.words} words woven into the prompt` +
-              (a.truncated ? " (excerpt)" : "") +
-              (a.redactedCount > 0 ? ` — ${a.redactedCount} secret(s) redacted` : "")
+              (a.truncated ? " (excerpt only)" : "") +
+              (a.redactedCount > 0 ? ` — ${a.redactedCount} secret(s) masked` : "")
             }
           >
-            <span aria-hidden>{a.kind === "pdf" ? "📄" : "📃"}</span>
-            <span className="max-w-[140px] truncate">{a.name}</span>
-            <span className="aw-muted">
-              {a.words}w{a.truncated ? "·cut" : ""}
-              {a.redactedCount > 0 ? "·🔒" : ""}
+            <span className="aw-attach-name aw-truncate">{a.name}</span>
+            <span className="aw-attach-meta">
+              {a.words}w{a.truncated ? " · cut" : ""}
+              {a.redactedCount > 0 ? " · masked" : ""}
             </span>
             <button
               type="button"
-              className="aw-muted ml-0.5 hover:text-red-500"
+              className="aw-attach-remove"
               aria-label={`Remove ${a.name}`}
               onClick={() => onRemove(a.id)}
             >
-              ✕
+              <CloseIcon size={10} />
             </button>
           </span>
         ))}
         {attachments.length < MAX_ATTACHMENTS && (
           <button
             type="button"
-            className="inline-flex items-center gap-1 rounded-full border border-dashed border-zinc-300 px-2 py-0.5 text-xs aw-muted hover:border-violet-500 hover:text-violet-500 dark:border-zinc-600"
+            className="aw-attach-add"
             disabled={busy}
             onClick={() => inputRef.current?.click()}
           >
-            {busy ? "Reading…" : "📎 Attach context"}
+            <PaperclipIcon />
+            {busy ? "Reading…" : "Attach context"}
           </button>
         )}
       </div>
       {attachments.length > 0 && (
-        <p className="mt-1 text-[10px] aw-muted">
-          File content stays on your device and is woven into the prompt above.
+        <p className="aw-attach-hint">
+          Read in this tab and pasted into the prompt. The file itself is never
+          uploaded.
         </p>
       )}
       <input

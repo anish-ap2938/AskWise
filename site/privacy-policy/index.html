@@ -6,34 +6,45 @@
   <title>Privacy Policy — AskWise Chrome Extension</title>
   <meta name="robots" content="index,follow" />
   <meta name="description" content="Official privacy policy for the AskWise Chrome extension." />
-  <style>
-    body {
-      margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      background: #fff;
-      color: #111;
-      line-height: 1.65;
-    }
-    main { max-width: 740px; margin: 0 auto; padding: 40px 20px 96px; }
-    h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 0.4rem; }
-    h2 { font-size: 1.2rem; margin: 2rem 0 0.55rem; }
-    p, li { font-size: 1rem; }
-    .meta { color: #444; margin-bottom: 1.5rem; }
-    ul { padding-left: 1.25rem; }
-    li { margin: 0.4rem 0; }
-    code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.9em;
-      background: #f4f4f5;
-      padding: 0.05em 0.3em;
-    }
-    a { color: #0b57d0; }
-  </style>
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#121210" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../styles.css" />
 </head>
 <body>
-  <main>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html" aria-label="AskWise, home">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <rect x="2.9" y="2.9" width="18.2" height="18.2" rx="5.4" stroke="currentColor" stroke-width="1.6" />
+          <path d="M8.4 9.2 11.4 12l-3 2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          <path class="mark-accent" d="M13.2 15.1h3.3" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+        AskWise
+      </a>
+
+      <nav class="site-nav" aria-label="Main">
+        <a class="nav-hide-sm" href="../index.html#examples">Examples</a>
+        <a class="nav-hide-sm" href="../index.html#privacy">Privacy</a>
+        <a class="btn btn--primary btn--sm" href="../index.html#install">Install</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="doc" id="main">
+    <a class="doc-back" href="../index.html">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+        <path d="M13 8H3m0 0 4-4M3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      Back to AskWise
+    </a>
+
     <h1>Privacy Policy for AskWise</h1>
-    <p class="meta">
+
+    <p class="doc-meta">
       <strong>Effective date:</strong> July 16, 2026<br />
       <strong>Last updated:</strong> July 17, 2026<br />
       <strong>Product:</strong> AskWise (Chrome extension)<br />
@@ -41,7 +52,7 @@
       (<a href="https://github.com/anish-ap2938/AskWise">github.com/anish-ap2938/AskWise</a>)
     </p>
 
-    <p>
+    <p class="doc-lede">
       This Privacy Policy explains how the AskWise Chrome extension (“AskWise”, “we”, “us”)
       handles information when you install and use the extension. This page is the official
       privacy policy for AskWise.
@@ -194,9 +205,20 @@
     <h2>13. Contact</h2>
     <p>
       For privacy questions about AskWise, open an issue at
-      <a href="https://github.com/anish-ap2938/AskWise/issues">https://github.com/anish-ap2938/AskWise/issues</a>
+      <a href="https://github.com/anish-ap2938/AskWise/issues">github.com/anish-ap2938/AskWise/issues</a>
       or contact the publisher email listed on the Chrome Web Store listing.
     </p>
   </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>AskWise — a free, local-first Chrome extension. MIT licensed.</p>
+      <ul class="footer-links">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="https://github.com/anish-ap2938/AskWise">GitHub</a></li>
+        <li><a href="https://github.com/anish-ap2938/AskWise/issues">Issues</a></li>
+      </ul>
+    </div>
+  </footer>
 </body>
 </html>

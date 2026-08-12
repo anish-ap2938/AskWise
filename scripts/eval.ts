@@ -10,14 +10,25 @@
  *
  * Exits non-zero if gated classification accuracy drops below 85%.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { classify } from "../src/shared/classify";
+import { classifyDetailed } from "../src/shared/classify";
 import { improveTier1 } from "../src/shared/improve";
+import { setIntentModel } from "../src/shared/intentModel";
 import type { ModeId } from "../src/shared/types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// The browser fetches this lazily; in Node we load it directly so the eval
+// measures the same hybrid classifier that ships.
+const MODEL_PATH = join(__dirname, "../public/assets/intent-model.json");
+if (existsSync(MODEL_PATH)) {
+  setIntentModel(JSON.parse(readFileSync(MODEL_PATH, "utf-8")));
+  console.log("intent model: loaded");
+} else {
+  console.log("intent model: NOT BUILT — rules only (run npm run train:intent)");
+}
 
 interface Fixture {
   id: string;
@@ -49,25 +60,41 @@ const stretch = fixtures.filter((f) => f.stretch);
 const perMode = new Map<string, ModeStats>();
 const confusions: string[] = [];
 
+const viaCounts = new Map<string, { n: number; correct: number }>();
+function trackVia(via: string, ok: boolean): void {
+  const v = viaCounts.get(via) ?? { n: 0, correct: 0 };
+  v.n++;
+  if (ok) v.correct++;
+  viaCounts.set(via, v);
+}
+
 let gatedCorrect = 0;
 for (const f of gated) {
-  const got = classify(f.text);
+  const { mode: got, via } = classifyDetailed(f.text);
   const stats = perMode.get(f.expected) ?? { total: 0, correct: 0 };
   stats.total++;
+  trackVia(via, got === f.expected);
   if (got === f.expected) {
     stats.correct++;
     gatedCorrect++;
   } else {
     confusions.push(
-      `  ${f.id}: "${f.text.slice(0, 60)}${f.text.length > 60 ? "…" : ""}" → expected ${f.expected}, got ${got}`
+      `  ${f.id}: "${f.text.slice(0, 60)}${f.text.length > 60 ? "…" : ""}" → expected ${f.expected}, got ${got} (via ${via})`
     );
   }
   perMode.set(f.expected, stats);
 }
 
 let stretchCorrect = 0;
+const stretchMisses: string[] = [];
 for (const f of stretch) {
-  if (classify(f.text) === f.expected) stretchCorrect++;
+  const { mode: got, via } = classifyDetailed(f.text);
+  trackVia(via, got === f.expected);
+  if (got === f.expected) stretchCorrect++;
+  else
+    stretchMisses.push(
+      `  ${f.id}: "${f.text.slice(0, 60)}${f.text.length > 60 ? "…" : ""}" → expected ${f.expected}, got ${got} (via ${via})`
+    );
 }
 
 const gatedAccuracy = gated.length > 0 ? gatedCorrect / gated.length : 1;
@@ -86,9 +113,17 @@ for (const [mode, s] of [...perMode.entries()].sort()) {
   const bar = "█".repeat(Math.round((s.correct / s.total) * 20)).padEnd(20, "░");
   console.log(`  ${mode.padEnd(14)} ${bar} ${s.correct}/${s.total}`);
 }
+console.log("\nDecided by:");
+for (const [via, v] of [...viaCounts.entries()].sort()) {
+  console.log(`  ${via.padEnd(9)} ${String(v.n).padStart(4)} used, ${pct(v.correct / v.n)} correct`);
+}
 if (confusions.length > 0) {
-  console.log(`\nMisclassifications (${confusions.length}):`);
+  console.log(`\nGated misclassifications (${confusions.length}):`);
   console.log(confusions.join("\n"));
+}
+if (stretchMisses.length > 0) {
+  console.log(`\nStretch misses (${stretchMisses.length}):`);
+  console.log(stretchMisses.join("\n"));
 }
 
 // ---------- 2. Rewrite metrics ----------

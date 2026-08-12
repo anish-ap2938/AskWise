@@ -15,6 +15,20 @@ import { legalPack } from "./packs/legal";
 import { financePack } from "./packs/finance";
 import { sciencePack } from "./packs/science";
 import { agentPack } from "./packs/agent";
+import { planningPack } from "./packs/planning";
+import { marketingPack } from "./packs/marketing";
+import { businessPack } from "./packs/business";
+import { mathHelpPack } from "./packs/mathHelp";
+import { translationPack } from "./packs/translation";
+import { imageGenPack } from "./packs/imageGen";
+import { academicPack } from "./packs/academic";
+import { everydayPack } from "./packs/everyday";
+import { peoplePack } from "./packs/people";
+import { languagePack } from "./packs/language";
+import { hobbyPack } from "./packs/hobby";
+import { productPack } from "./packs/product";
+import { devopsPack } from "./packs/devops";
+import { mlAiPack } from "./packs/mlai";
 import { granularPack } from "./packs/granular";
 
 export type { SubRecipeDef } from "./types";
@@ -33,6 +47,20 @@ export const allSubRecipes: SubRecipeDef[] = [
   ...researchPack,
   ...dataPack,
   ...agentPack,
+  ...planningPack,
+  ...marketingPack,
+  ...businessPack,
+  ...mathHelpPack,
+  ...translationPack,
+  ...imageGenPack,
+  ...academicPack,
+  ...everydayPack,
+  ...peoplePack,
+  ...languagePack,
+  ...hobbyPack,
+  ...productPack,
+  ...devopsPack,
+  ...mlAiPack,
   ...granularPack,
 ];
 

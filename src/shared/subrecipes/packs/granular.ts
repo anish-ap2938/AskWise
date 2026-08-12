@@ -5,7 +5,6 @@ import type { SubRecipeDef } from "../types";
  * so Instant never feels like one universal scaffold.
  */
 export const granularPack: SubRecipeDef[] = [
-  // —— App builder ——
   {
     id: "app_builder/ecommerce",
     parent: "app_builder",
@@ -108,8 +107,6 @@ Bias to fewer pages with sharp filters over 12 half-baked charts.`,
 
 **Wedge:** one workflow end-to-end with eval examples. Ship evals before features 4–10.`,
   },
-
-  // —— Writing ——
   {
     id: "writing/proposal",
     parent: "writing",
@@ -190,8 +187,6 @@ Bias to fewer pages with sharp filters over 12 half-baked charts.`,
 
 Keep it factual. No fluff.`,
   },
-
-  // —— Coding ——
   {
     id: "coding_debug/auth",
     parent: "coding_debug",
@@ -265,8 +260,6 @@ Never "just disable auth" as a workaround.`,
 
 **Deliver:** root cause → fix → contract test.`,
   },
-
-  // —— Research ——
   {
     id: "research/competitor",
     parent: "research",
@@ -311,8 +304,6 @@ Label facts vs inference. No invented funding numbers.`,
 - Practice projects that force retrieval
 - How I'll know I've leveled up (skills checklist)`,
   },
-
-  // —— Data ——
   {
     id: "data_analysis/ab_test",
     parent: "data_analysis",
@@ -334,7 +325,7 @@ No p-hacking. Call out peeking and multiple-comparisons risk.`,
     parent: "data_analysis",
     category: "metrics",
     label: "Metrics Design",
-    triggers: ["north star", "kpi framework", "define metrics", "metric tree", "funnel metrics"],
+    triggers: ["north star", "\\bkpis?\\b", "kpi framework", "define metrics", "metric tree", "funnel metrics"],
     structured: `You are a product analyst designing a metric system. {{request}}
 
 **Deliver:**
@@ -344,8 +335,6 @@ No p-hacking. Call out peeking and multiple-comparisons risk.`,
 - What NOT to optimize (vanity / Goodhart traps)
 - A weekly review ritual in 5 bullets`,
   },
-
-  // —— Career ——
   {
     id: "resume_job/linkedin_about",
     parent: "resume_job",
@@ -383,8 +372,6 @@ No p-hacking. Call out peeking and multiple-comparisons risk.`,
 
 Keep it whiteboard-friendly. Push me when I handwave.`,
   },
-
-  // —— Quick improve / learning adjacent ——
   {
     id: "quick_improve/brainstorm",
     parent: "quick_improve",
@@ -400,8 +387,8 @@ Keep it whiteboard-friendly. Push me when I handwave.`,
 4. Expand the top 3 into a tiny experiment each (≤1 day).`,
   },
   {
-    id: "quick_improve/plan_week",
-    parent: "quick_improve",
+    id: "planning/plan_week",
+    parent: "planning",
     category: "productivity",
     label: "Weekly Plan",
     triggers: [
@@ -419,6 +406,31 @@ Keep it whiteboard-friendly. Push me when I handwave.`,
 - Friday review questions
 
 Be ruthless about capacity. Assume I overcommit.`,
+  },
+  {
+    id: "quick_improve/negotiation",
+    parent: "quick_improve",
+    category: "negotiation",
+    label: "Negotiation Prep",
+    triggers: [
+      "negotiat(e|ing|ion) (a|my|the|with|price|rent|contract|terms)",
+      "\\b(batna|walk.?away (number|point)|anchor(ing)? (high|low))\\b",
+      "haggl(e|ing)",
+      "(lower|reduce|get out of) (my|the|our) (rent|bill|price|fee|quote)",
+      "\\b(car dealer|vendor contract|landlord wants)\\b",
+    ],
+    structured: `You are a negotiation coach who prepares people rather than scripting tricks. {{request}}
+
+**Prepare in this order:**
+1. My BATNA: what I actually do if this fails. Everything else is theatre until that's honest and specific.
+2. Their side: what they need, what it costs them to say yes, and what pressure they're under. Most deals unlock here, not in my arguments.
+3. The ZOPA: my target, my reservation point, and my realistic read of theirs — with the reasoning, not a guess dressed as data.
+4. Trade variables beyond price (timing, term, scope, payment schedule) so there's something to give that doesn't cost me much.
+5. The opening: who anchors, at what number, and the one-sentence justification said out loud.
+
+**Then rehearse:** the three likely pushbacks with word-for-word responses, and the exact sentence I use to walk away without burning the relationship.
+
+**Hard rule:** no bluffing about offers or alternatives I don't have. **Deliver:** prep sheet → opening script → pushback responses → my walk-away line.`,
   },
   {
     id: "simple_answer/definition",

@@ -1,36 +1,36 @@
-# ⚡ AskWise
+# AskWise
 
-**Grammarly for AI prompts.** A free, open-source Chrome extension that turns rough prompts
-into structured, model-ready prompts — on ChatGPT, Claude, Gemini, Perplexity, DeepSeek,
-and Copilot. Everything runs on your device.
+A free Chrome extension that rewrites the rough prompt sitting in your chat box into a
+clear, structured one — on ChatGPT, Claude, Gemini, Perplexity, DeepSeek and Copilot.
+It runs entirely on your device: no account, no server, no telemetry.
 
 ![AskWise demo](docs/assets/demo.gif)
 
-Type `"i want to build and app for fitness"` → get a spec-style prompt with a role, scope
-questions, milestones, and acceptance criteria — plus a before/after quality score that
-teaches you *why* it's better.
+Type `i want to build and app for fitness`, click **Improve**, and you get a spec-style
+prompt with a role, scope questions, milestones and acceptance criteria — next to a
+before/after score that names what was missing, so the next prompt you write yourself is
+better.
 
-Regenerate store screenshots + this GIF: `npm run capture:assets`
+## What makes it different
 
-## Why it's different
-
-- **Local-first, actually.** Classification, templates, and scoring are plain local code.
-  Every Advanced rewrite and Refine request uses the built-in on-device model (WebLLM /
-  WebGPU, ~1–2 GB, downloaded once). No server, API key, account, or telemetry. See
-  [PRIVACY.md](PRIVACY.md).
-- **An intent classifier, not a text expander.** A rule engine (100% on gated fixtures)
-  routes your prompt to one of 9 modes and 36+ specialized sub-recipes (ATS resume checks,
-  salary negotiation, slow-query debugging, cold outreach, …).
-- **Explainable scoring.** The 0–100 score is a deterministic rubric (task clarity,
-  specificity, context, format, constraints…) — not LLM vibes. The diff view shows exactly
-  what was added.
-- **Quality is tested.** `npm run eval` runs every fixture through
-  classify → rewrite → score and gates on accuracy; add `--judge` to have a local LLM grade
-  rewrite quality 1–10.
+- **Local, not "local-ish".** Classification, templates and scoring are plain code that
+  runs in the page. Advanced rewrites and Refine use a small model running in your own
+  browser through WebGPU (weights download once, ~1 GB). Nothing is sent to an AI API.
+  See [PRIVACY.md](PRIVACY.md).
+- **It recognises the request, it doesn't expand text.** A rule engine plus a small
+  intent classifier routes your prompt to one of 18 modes and 200+ specialised sub-recipes
+  — ATS resume screening, salary negotiation, slow-query debugging, cold outreach, study
+  plans.
+- **The score is explainable.** 0–100 from a deterministic rubric (task clarity,
+  specificity, context, format, constraints…), not model vibes. The Changes view shows
+  exactly which words AskWise added.
+- **Rewrite quality is tested.** `npm run eval` runs every fixture through
+  classify → rewrite → score and gates on accuracy; add `--judge` to have a local model
+  grade rewrite quality 1–10.
 
 ## Install
 
-**From source (2 minutes):**
+The Chrome Web Store listing isn't live yet. From source takes about two minutes:
 
 ```bash
 git clone <this repo> && cd AskWise
@@ -38,17 +38,20 @@ npm install
 npm run build
 ```
 
-Then: `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select `dist/`.
-Visit chatgpt.com, type a prompt (8+ characters), click the **⚡ Improve** pill.
+Then open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and
+select `dist/`. Go to chatgpt.com, type at least 8 characters into the chat box, and the
+**Improve** pill appears next to it. `Alt+I` opens it without the mouse.
 
-**Chrome Web Store:** coming soon.
+Regenerate the store screenshots and the GIF above with `npm run capture:assets`.
 
-## On-device AI for Advanced rewrites
+## On-device model (Advanced + Refine)
 
-The instant (Tier 1) rewrites work offline forever. For LLM-powered Advanced rewrites,
-AskWise downloads Qwen2.5 3B (~1.9 GB by default) into the browser and runs it locally via
-WebGPU (Chrome 113+). The model corrects spelling and grammar, preserves the user's intent,
-and applies mode-specific prompt-engineering rules. No prompt is sent to an external AI API.
+Simple and Structured rewrites are instant and work offline from the moment you install.
+Advanced and Refine need a model: AskWise downloads a fine-tuned Qwen2.5 1.5B build
+(~1 GB, or pick a different size in settings) into the browser cache and runs it through
+WebGPU on Chrome 113+. It fixes spelling and grammar, keeps your intent, and applies the
+prompt-engineering rules for the detected mode. Text that looks like an API key, token or
+email address is redacted before the model sees it.
 
 ## Development
 
@@ -85,10 +88,6 @@ unit-tested), `src/content/` (adapters + widget), `src/background/` (router, LLM
 The highest-leverage contribution is **a template pack** — ~10 minutes, no build knowledge
 needed. See [CONTRIBUTING.md](CONTRIBUTING.md). Fixture contributions (real prompts people
 type) are a close second.
-
-## Keyboard shortcut
-
-`Alt+I` — open the improver for the focused composer.
 
 ## License
 

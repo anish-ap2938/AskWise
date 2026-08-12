@@ -10,7 +10,7 @@
 
 /** Edit this after `training/06_push_hf.sh` succeeds. */
 export const ASKWISE_FT_HF_REPO =
-  "YOUR_HF_USER/AskWise-PromptEngineer-1.5B-q4f16_1-MLC";
+  "anipanii/AskWise-PromptEngineer-1.5B-q4f16_1-MLC";
 
 export const ASKWISE_FT_MODEL_ID =
   "AskWise-PromptEngineer-1.5B-q4f16_1-MLC" as const;
