@@ -51,16 +51,28 @@ def main() -> None:
     tokenizer.save_pretrained(str(out))
     # Newer transformers nest rope_theta under rope_parameters; MLC gen_config
     # still expects a top-level rope_theta for Qwen2.
-    cfg_path = out / "config.json"
     import json
 
-    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-    if "rope_theta" not in cfg:
-        nested = (cfg.get("rope_parameters") or {}).get("rope_theta")
-        cfg["rope_theta"] = float(nested) if nested is not None else 1000000.0
-        cfg_path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
-        print(f"Patched config.json with rope_theta={cfg['rope_theta']}")
+    def patch_rope(path: Path) -> None:
+        cfg_path = path / "config.json"
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+        if "rope_theta" not in cfg:
+            nested = (cfg.get("rope_parameters") or {}).get("rope_theta")
+            cfg["rope_theta"] = float(nested) if nested is not None else 1000000.0
+            cfg_path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+            print(f"Patched {cfg_path.name} with rope_theta={cfg['rope_theta']}")
+
+    patch_rope(out)
     print(f"Merged HF model -> {out}")
+
+    # MLC convert prefers float16 weights over bf16 on Windows.
+    f16_out = ROOT / "output" / "merged_hf_f16"
+    f16_out.mkdir(parents=True, exist_ok=True)
+    print(f"Exporting float16 copy for MLC -> {f16_out}")
+    model_f16 = model.to(dtype=torch.float16)
+    model_f16.save_pretrained(str(f16_out), safe_serialization=True)
+    tokenizer.save_pretrained(str(f16_out))
+    patch_rope(f16_out)
     print("Next: run 05_convert_mlc (bash or .ps1) then push the MLC folder to Hugging Face.")
 
 

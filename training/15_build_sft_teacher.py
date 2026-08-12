@@ -7,12 +7,15 @@ taught the student to echo the deterministic rewriter. Here a stronger local mod
 (qwen3:8b) polishes each draft into a genuinely better prompt, and the result is
 validated before it becomes a target.
 
-Input:  training/data/raw/sft_drafts.jsonl  (from scripts/export-drafts.ts —
-        carries the exact system/user strings the extension builds at runtime)
+Teacher calls use a compact rewrite prompt (fast). Training rows still store the
+exact system/user strings the extension builds at runtime, so the student sees
+production prompt shapes.
+
+Input:  training/data/raw/sft_drafts.jsonl  (from scripts/export-drafts.ts)
 Output: training/data/prompt_sft.jsonl      (chat-format SFT rows)
 
 Run:
-    python training/14_build_sft_teacher.py --limit 12000 --workers 5
+    python training/15_build_sft_teacher.py --limit 12000 --workers 3
 """
 
 from __future__ import annotations
@@ -22,29 +25,25 @@ import json
 import re
 import threading
 import urllib.error
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-
-from lib_label import ollama_chat
 
 ROOT = Path(__file__).resolve().parent
 RAW = ROOT / "data" / "raw"
 
-TEACHER_ADDENDUM = """
-
-You are producing a GOLD reference rewrite that a smaller model will learn from.
-- Start from the Instant draft; keep what already works and fix what doesn't.
-- Silently correct every spelling and grammar error from the raw request.
-- Cut filler. Every sentence must carry information the target AI can act on.
-- Do NOT answer or solve the user's task. You only rewrite the request.
-- Do NOT add placeholders like [insert detail] unless the request truly requires
-  the user to supply something only they know.
+TEACHER_SYSTEM = """You polish Instant prompt drafts into GOLD rewrites for a smaller model to learn.
+Rules:
+- Start from the Instant drafts; keep what works, fix what doesn't.
+- Silently correct spelling/grammar from the raw request.
+- Cut filler. Every sentence must help the target AI act.
+- Do NOT answer or solve the user's task — only rewrite the request.
+- Do NOT invent placeholders like [insert detail] unless truly required.
 - structured: at most 110 words. advanced: at most 200 words.
-Return ONLY the JSON object."""
+Return ONLY JSON: {"structured":"...","advanced":"..."}"""
 
 WORD_RE = re.compile(r"\S+")
 
-# Phrases that mean the model started answering instead of rewriting.
 LEAKED_ANSWER = re.compile(
     r"^(sure|certainly|here('s| is) (the|your|a)|i'?d be happy|of course|absolutely)\b",
     re.I,
@@ -92,13 +91,56 @@ def validate(obj: dict, row: dict) -> tuple[bool, str]:
         return False, "answered instead of rewriting"
     if structured.strip() == advanced.strip():
         return False, "variants identical"
-    # The rewrite must still be about the user's request.
     raw_words = {w.lower() for w in WORD_RE.findall(row["text"]) if len(w) > 4}
     if raw_words:
         kept = sum(1 for w in raw_words if w in structured.lower() or w in advanced.lower())
         if kept / len(raw_words) < 0.15:
             return False, "drifted off topic"
     return True, ""
+
+
+def teacher_chat(
+    model: str,
+    host: str,
+    *,
+    mode: str,
+    raw_text: str,
+    structured: str,
+    advanced: str,
+    temperature: float = 0.3,
+    timeout: int = 120,
+) -> str:
+    """Compact teacher call — not the full production meta-prompt."""
+    user = (
+        f"mode: {mode}\n"
+        f"raw_request:\n{raw_text}\n\n"
+        f"instant_structured:\n{structured}\n\n"
+        f"instant_advanced:\n{advanced}\n\n"
+        "Return improved JSON only."
+    )
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": TEACHER_SYSTEM},
+            {"role": "user", "content": user},
+        ],
+        "stream": False,
+        "think": False,
+        "format": "json",
+        "options": {
+            "temperature": temperature,
+            "num_ctx": 4096,
+            "num_predict": 700,
+        },
+    }
+    req = urllib.request.Request(
+        f"{host}/api/chat",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    return data.get("message", {}).get("content", "")
 
 
 def main() -> None:
@@ -108,7 +150,7 @@ def main() -> None:
     ap.add_argument("--model", type=str, default="qwen3:8b")
     ap.add_argument("--host", type=str, default="http://127.0.0.1:11434")
     ap.add_argument("--limit", type=int, default=12000)
-    ap.add_argument("--workers", type=int, default=5)
+    ap.add_argument("--workers", type=int, default=3)
     args = ap.parse_args()
 
     drafts = load_jsonl(args.drafts)
@@ -135,14 +177,15 @@ def main() -> None:
 
     def work(row: dict) -> None:
         try:
-            raw = ollama_chat(
+            raw = teacher_chat(
                 args.model,
-                row["user"],
                 args.host,
-                system=row["system"] + TEACHER_ADDENDUM,
-                temperature=0.3,
+                mode=row.get("mode", "quick_improve"),
+                raw_text=row["text"],
+                structured=row.get("structured") or "",
+                advanced=row.get("advanced") or "",
             )
-        except (urllib.error.URLError, TimeoutError, OSError):
+        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError):
             with lock:
                 stats["n"] += 1
                 stats["bad"] += 1
@@ -185,7 +228,7 @@ def main() -> None:
                     + "\n"
                 )
                 stats["ok"] += 1
-            if stats["n"] % 200 == 0:
+            if stats["n"] % 100 == 0:
                 fh.flush()
                 print(
                     f"  {stats['n']}/{total} | kept={stats['ok']} rejected={stats['bad']}",

@@ -81,9 +81,11 @@ def extract_raw(user_content: str) -> str | None:
 
 
 def rewrite_user(user_content: str, new_raw: str) -> str:
+    # Use a callable replacement so backslashes in new_raw are not parsed as
+    # re.sub template escapes (common in Windows paths / code snippets).
     return re.sub(
         r"<raw_prompt>.*?</raw_prompt>",
-        f"<raw_prompt>{new_raw}</raw_prompt>",
+        lambda _m: f"<raw_prompt>{new_raw}</raw_prompt>",
         user_content,
         count=1,
         flags=re.S,
