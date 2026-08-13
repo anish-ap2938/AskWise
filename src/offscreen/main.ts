@@ -1,4 +1,5 @@
 import { CreateMLCEngine, hasModelInCache, type MLCEngine } from "@mlc-ai/web-llm";
+import { installHfJsonFetchProxy } from "../shared/hfJsonFetch";
 import { assertMlcModelJson } from "../shared/mlcArtifacts";
 import {
   buildOnDeviceAppConfig,
@@ -12,6 +13,9 @@ import {
 } from "../shared/ondeviceModel";
 import { humanizeOnDeviceError } from "../shared/ondeviceProgress";
 import { connectKeepAlivePort } from "../shared/runtimeMessage";
+
+// Must run before WebLLM fetches mlc-chat-config.json from Hugging Face.
+installHfJsonFetchProxy();
 
 type OffscreenRequest =
   | { type: "ONDEVICE_ENSURE"; model: OnDeviceModelId; requestId: string }

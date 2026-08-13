@@ -36,4 +36,12 @@ describe("on-device WebLLM appConfig", () => {
   it("uses IndexedDB so HF redirects are fetched instead of Cache API", () => {
     expect(buildOnDeviceAppConfig().cacheBackend).toBe("indexeddb");
   });
+
+  it("points stock models at HF resolve/main so preflight is not the repo SPA", () => {
+    for (const spec of ONDEVICE_MODELS) {
+      if (spec.id === ASKWISE_FT_MODEL_ID) continue;
+      const record = findOnDeviceModelRecord(spec.id);
+      expect(record?.model).toMatch(/\/resolve\/main\/$/);
+    }
+  });
 });

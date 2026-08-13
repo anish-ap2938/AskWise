@@ -21,11 +21,11 @@ const STOCK_MODEL_URLS: Record<
   string
 > = {
   "Llama-3.2-1B-Instruct-q4f16_1-MLC":
-    "https://huggingface.co/mlc-ai/Llama-3.2-1B-Instruct-q4f16_1-MLC",
+    "https://huggingface.co/mlc-ai/Llama-3.2-1B-Instruct-q4f16_1-MLC/resolve/main/",
   "Qwen2.5-1.5B-Instruct-q4f16_1-MLC":
-    "https://huggingface.co/mlc-ai/Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+    "https://huggingface.co/mlc-ai/Qwen2.5-1.5B-Instruct-q4f16_1-MLC/resolve/main/",
   "Qwen2.5-3B-Instruct-q4f16_1-MLC":
-    "https://huggingface.co/mlc-ai/Qwen2.5-3B-Instruct-q4f16_1-MLC",
+    "https://huggingface.co/mlc-ai/Qwen2.5-3B-Instruct-q4f16_1-MLC/resolve/main/",
 };
 
 function modelWeightsUrl(id: OnDeviceModelId): string {

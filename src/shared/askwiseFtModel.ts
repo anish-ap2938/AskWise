@@ -23,8 +23,30 @@ export function askwiseFtConfigured(): boolean {
   return !ASKWISE_FT_HF_REPO.startsWith("YOUR_HF_USER/");
 }
 
-/** Hugging Face resolve URL (trailing slash required so WebLLM joins artifact names). */
-export function askwiseFtModelUrl(): string {
+/**
+ * Packaged mlc-chat-config.json path. Must include `/resolve/main/` because
+ * WebLLM's cleanModelUrl() appends that suffix unless it is already present.
+ */
+export const ASKWISE_FT_PACKAGED_CONFIG =
+  "mlc-models/askwise-ft/resolve/main/mlc-chat-config.json";
+
+/** Hugging Face resolve URL for weight shards (trailing slash required). */
+export function askwiseFtWeightsUrl(): string {
   const repo = ASKWISE_FT_HF_REPO.replace(/^\/+|\/+$/g, "");
   return `https://huggingface.co/${repo}/resolve/main/`;
+}
+
+/**
+ * Base URL WebLLM joins with `mlc-chat-config.json`.
+ * In the extension this is chrome-extension://… so config/tokenizer JSON
+ * never depend on Hugging Face CORS. Shards stay on HF via tensor-cache
+ * absolute dataPaths.
+ */
+export function askwiseFtModelUrl(): string {
+  if (typeof chrome !== "undefined" && typeof chrome.runtime?.getURL === "function") {
+    return chrome
+      .runtime.getURL(ASKWISE_FT_PACKAGED_CONFIG)
+      .replace(/mlc-chat-config\.json$/, "");
+  }
+  return askwiseFtWeightsUrl();
 }

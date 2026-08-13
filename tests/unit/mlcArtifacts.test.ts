@@ -15,6 +15,9 @@ describe("MLC artifact URLs", () => {
     expect(mlcArtifactUrl(base, "tensor-cache.json")).toBe(
       `${base}tensor-cache.json`
     );
+    expect(`${base}mlc-chat-config.json`).toMatch(
+      /\/resolve\/main\/mlc-chat-config\.json$/
+    );
   });
 
   it("rejects HTML error pages instead of throwing a JSON parse error", async () => {

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "fetch:model-libs": "node scripts/fetch-model-libs.mjs",
-    "build": "npm run fetch:model-libs && node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc && vite build --mode production && node scripts/sanitize-manifest.mjs",
+    "fetch:mlc-json": "node scripts/fetch-mlc-json.mjs",
+    "build": "npm run fetch:model-libs && npm run fetch:mlc-json && node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc && vite build --mode production && node scripts/sanitize-manifest.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

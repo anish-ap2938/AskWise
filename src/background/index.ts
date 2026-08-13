@@ -1,4 +1,5 @@
 import { setupRouter } from "./router";
+import { setupHfFetchListener } from "./hfFetch";
 import { getStorage } from "./storage";
 import {
   ensureOnDeviceModel,
@@ -16,6 +17,7 @@ import { getOnDeviceProgress } from "../shared/ondeviceProgress";
 
 console.log("[AskWise] service worker started");
 
+setupHfFetchListener();
 setupOnDeviceProgressListener();
 setupKeepAlivePorts();
 

@@ -1,4 +1,8 @@
 import { looksLikeHtmlDocument } from "./ondeviceProgress";
+import {
+  fetchJsonViaBackground,
+  isHfJsonArtifactUrl,
+} from "./hfJsonFetch";
 
 /** JSON files WebLLM 0.2.x reads before downloading weight shards. */
 export const MLC_JSON_ARTIFACTS = [
@@ -11,6 +15,23 @@ export function mlcArtifactUrl(modelUrl: string, filename: string): string {
   return new URL(filename, base).href;
 }
 
+async function fetchArtifactResponse(url: string): Promise<Response> {
+  if (
+    isHfJsonArtifactUrl(url) &&
+    typeof chrome !== "undefined" &&
+    typeof chrome.runtime?.sendMessage === "function"
+  ) {
+    return fetchJsonViaBackground(url);
+  }
+  // Do not set Cache-Control: that header is not CORS-safelisted and
+  // makes Chrome preflight HF's 307 /api/resolve-cache/ redirect, which
+  // often surfaces as an HTML document instead of JSON.
+  return fetch(url, {
+    redirect: "follow",
+    headers: { Accept: "application/json, text/plain, */*" },
+  });
+}
+
 /**
  * Fetch a WebLLM JSON artifact and fail with a human message if HF
  * returned HTML (404 SPA, login wall) instead of JSON.
@@ -21,7 +42,7 @@ export async function fetchMlcJsonArtifact(
 ): Promise<unknown> {
   let response: Response;
   try {
-    response = await fetch(url, { redirect: "follow", cache: "no-store" });
+    response = await fetchArtifactResponse(url);
   } catch {
     throw new Error(
       `Could not reach Hugging Face to download ${label}. Check your connection and try again.`

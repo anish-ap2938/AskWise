@@ -12,6 +12,7 @@ playwright-report/
 .env.*
 *.local
 public/model-libs/*.wasm
+public/mlc-models/**/tokenizer.json
 training/.venv/
 training/output/
 training/__pycache__/
